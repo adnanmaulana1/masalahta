@@ -14,7 +14,7 @@ function Logo() {
   )
 }
 
-function SearchBar({ q, setQ, autoFocus = false }) {
+function SearchBar({ q, setQ, inputRef }) {
   const navigate = useNavigate()
   const [suggest, setSuggest] = useState([])
   const [open, setOpen] = useState(false)
@@ -53,7 +53,7 @@ function SearchBar({ q, setQ, autoFocus = false }) {
           onChange={e => setQ(e.target.value)}
           onFocus={() => suggest.length && setOpen(true)}
           placeholder="Cari jasa: desain logo, website, video..."
-          autoFocus={autoFocus}
+          ref={inputRef}
           className="flex-1 bg-transparent outline-none text-sm text-ink placeholder:text-gray-400 min-w-0"
         />
         {q && (
@@ -135,36 +135,43 @@ function MobileBottomNav({ user }) {
     return ''
   })()
   const go = (to) => { if (pathname !== to) navigate(to) }
-  const itemCls = (active) => `relative flex flex-col items-center justify-center px-2.5 pt-1.5 pb-1 rounded-2xl transition-all ${active ? 'text-[#0e76f1] bg-blue-50/80' : 'text-gray-400 hover:text-gray-600 hover:bg-gray-50'}`
   const renderItem = (active, to, title, label, icon, avatar) => (
-    <button key={label} onClick={() => go(to)} className={`flex-1 ${itemCls(active)}`} title={title}>
+    <button
+      key={label}
+      onClick={() => go(to)}
+      title={title}
+      aria-current={active ? 'page' : undefined}
+      className={`relative flex-1 min-w-0 h-[54px] flex flex-col items-center justify-center gap-1 rounded-2xl transition-all duration-200 active:scale-95 ${active ? 'text-[#0e76f1] bg-blue-50' : 'text-gray-400 hover:text-gray-600 hover:bg-gray-50'}`}
+    >
       <span className="h-5 flex items-center justify-center">
-        {avatar && user ? <Avatar src={user.avatar} username={user.username} size={18} className="ring-1 ring-blue-100" /> : (
-          <Icon name={icon} size={18} strokeWidth={active ? 2.5 : 2} />
+        {avatar && user ? <Avatar src={user.avatar} username={user.username} size={20} className="ring-1 ring-blue-100" /> : (
+          <Icon name={icon} size={20} strokeWidth={active ? 2.5 : 2} />
         )}
       </span>
-      <span className="h-3.5 mt-0.5 flex items-center justify-center text-[10px] leading-none font-bold">{label}</span>
-      <span className={`h-[3px] w-5 mt-0.5 rounded-full bg-gradient-to-r from-[#0e76f1] to-[#6a3cff] transition-all duration-300 ${active ? 'opacity-100 scale-100' : 'opacity-0 scale-50'}`}></span>
+      <span className="text-[10px] leading-none font-bold truncate max-w-full px-1">{label}</span>
+      <span className={`absolute bottom-1 h-[3px] w-5 rounded-full bg-gradient-to-r from-[#0e76f1] to-[#6a3cff] transition-all duration-300 ${active ? 'opacity-100 scale-100' : 'opacity-0 scale-50'}`} />
     </button>
   )
   return (
-    <nav className="lg:hidden fixed bottom-0 inset-x-0 z-[80] bg-white/95 backdrop-blur-md border-t border-gray-200/80">
-      <div className="max-w-md mx-auto h-[64px] px-1.5 pb-[env(safe-area-inset-bottom)] flex items-center justify-center">
-        <div className="flex items-center gap-0.5 w-full">
+    <nav className="lg:hidden fixed bottom-0 inset-x-0 z-[80] px-3 pb-[max(10px,env(safe-area-inset-bottom))] pointer-events-none" aria-label="Navigasi bawah">
+      <div
+        className="pointer-events-auto max-w-md mx-auto rounded-[24px] border border-gray-200/70 bg-white/95 backdrop-blur-xl shadow-[0_12px_40px_rgba(16,24,40,.16)] px-2 py-2"
+      >
+        <div className="grid grid-cols-5 items-center gap-0.5">
           {renderItem(tab === 'home', '/', 'Beranda', 'Beranda', 'home')}
           {renderItem(tab === 'explore', '/explore', 'Jelajahi', 'Jelajahi', 'search')}
 
-          {/* center + button */}
-          <div className="relative flex justify-center w-[72px] shrink-0">
+          <div className="h-[54px] flex justify-center">
             <button
               onClick={() => go('/create-gig')}
-              className="absolute -top-7 left-1/2 -translate-x-1/2 flex flex-col items-center"
-              title="Jual Jasa"
+              title="Buat Jasa"
+              aria-current={tab === 'sell' ? 'page' : undefined}
+              className={`w-full h-[54px] flex flex-col items-center justify-center gap-1 rounded-2xl transition-all duration-200 active:scale-95 ${tab === 'sell' ? 'bg-blue-50' : 'hover:bg-gray-50'}`}
             >
-              <span className="w-[52px] h-[52px] rounded-2xl bg-gradient-to-br from-[#0e76f1] to-[#6a3cff] flex items-center justify-center text-white shadow-lg shadow-blue-500/30 ring-[5px] ring-white transition-transform active:scale-95">
-                <Icon name="plus" size={24} strokeWidth={3} />
+              <span className={`w-7 h-7 rounded-xl bg-gradient-to-br from-[#0e76f1] to-[#6a3cff] flex items-center justify-center text-white shadow-sm transition-transform ${tab === 'sell' ? 'scale-105 shadow-blue-500/25' : ''}`}>
+                <Icon name="plus" size={17} strokeWidth={3} />
               </span>
-              <span className={`mt-0.5 text-[10px] font-bold ${tab === 'sell' ? 'text-[#0e76f1]' : 'text-gray-400'}`}>Jual</span>
+              <span className={`text-[10px] leading-none font-bold whitespace-nowrap ${tab === 'sell' ? 'text-[#0e76f1]' : 'text-gray-500'}`}>Jual Jasa</span>
             </button>
           </div>
 
@@ -183,7 +190,19 @@ export default function Header() {
   const [cats, setCats] = useState([])
   const [mobileSearch, setMobileSearch] = useState(false)
   const [scrolled, setScrolled] = useState(false)
+  const mobileInputRef = useRef(null)
   const navigate = useNavigate()
+
+  const toggleMobileSearch = () => {
+    setMobileSearch((v) => {
+      if (!v) {
+        requestAnimationFrame(() => {
+          mobileInputRef.current?.focus({ preventScroll: true })
+        })
+      }
+      return !v
+    })
+  }
 
   useEffect(() => {
     api.get('/categories').then(r => setCats((r.data.data || []).slice(0, 8))).catch(() => {})
@@ -238,7 +257,7 @@ export default function Header() {
 
           {/* mobile controls */}
           <div className="lg:hidden flex items-center gap-1.5 ml-auto">
-            <button onClick={() => setMobileSearch(!mobileSearch)} className="p-2.5 rounded-full hover:bg-gray-100 text-gray-600" title="Cari">
+            <button onClick={toggleMobileSearch} className="p-2.5 rounded-full hover:bg-gray-100 text-gray-600" title="Cari">
               <Icon name="search" size={20} />
             </button>
           </div>
@@ -247,8 +266,8 @@ export default function Header() {
 
       {/* mobile search */}
       {mobileSearch && (
-        <div className="relative z-10 lg:hidden bg-white border-b px-4 py-3 slide-down">
-          <SearchBar q={q} setQ={setQ} autoFocus />
+        <div className="relative z-10 lg:hidden bg-white border-b px-4 py-3 slide-down scroll-mt-32">
+          <SearchBar q={q} setQ={setQ} inputRef={mobileInputRef} />
         </div>
       )}
 

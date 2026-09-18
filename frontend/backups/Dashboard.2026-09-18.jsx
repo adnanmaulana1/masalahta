@@ -5,6 +5,7 @@ import { useAuth } from '../context/AuthContext'
 import { showToast } from '../components/Toast'
 import Icon from '../components/Icon'
 import Avatar from '../components/Avatar'
+import Stars from '../components/Stars'
 import { formatIDR, orderStatus, parseImages } from '../utils/format'
 
 const ACTIVE = ['pending', 'progress', 'review']
@@ -44,13 +45,6 @@ export default function Dashboard() {
     api.get('/gigs?limit=6').then(r => setTrend(r.data.data || [])).catch(() => {})
   }, [user])
 
-  useEffect(() => {
-    if (!editOpen) return
-    const overflow = document.body.style.overflow
-    document.body.style.overflow = 'hidden'
-    return () => { document.body.style.overflow = overflow }
-  }, [editOpen])
-
   if (!user) {
     return (
       <div className="max-w-[1240px] mx-auto px-4 py-16 text-center">
@@ -77,6 +71,12 @@ export default function Dashboard() {
   const myCompleted = myOrders.filter(o => o.status === 'completed')
   const income = inCompleted.reduce((s, o) => s + (Number(o.price) || 0), 0)
   const spent = myCompleted.reduce((s, o) => s + (Number(o.price) || 0), 0)
+
+  const greeting = (() => {
+    if (role === 'admin') return 'Kontrol Platform'
+    if (isFL) return 'Tingkatkan Cuanmu'
+    return 'Kelola Pesananmu'
+  })()
 
   const stats = isFL ? [
     { label: 'Pendapatan', value: compactRp(income), sub: 'dari order selesai', icon: 'wallet', c: 'from-emerald-500 to-green-600' },
@@ -109,26 +109,14 @@ export default function Dashboard() {
 
   const saveEdit = async (e) => {
     e.preventDefault()
-    const payload = {
-      ...editForm,
-      username: editForm.username.trim(),
-      email: editForm.email.trim(),
-      full_name: editForm.full_name.trim(),
-      location: editForm.location.trim(),
-      bio: editForm.bio.trim(),
-    }
-    if (!payload.username || !payload.email || !payload.full_name) {
-      showToast('Nama, username, dan email wajib diisi', 'error')
-      return
-    }
     setEditSaving(true)
     try {
-      const res = await api.put('/auth/me', payload)
+      const res = await api.put('/auth/me', editForm)
       updateUser(res.data)
       showToast('Profil diperbarui')
       setEditOpen(false)
-    } catch (error) {
-      showToast(error.response?.data?.error || 'Gagal memperbarui profil', 'error')
+    } catch {
+      showToast('Gagal memperbarui profil', 'error')
     } finally {
       setEditSaving(false)
     }
@@ -200,52 +188,50 @@ export default function Dashboard() {
   const statusMax = Math.max(1, ...Object.values(statusCount))
 
   return (
-    <div className="max-w-[1180px] mx-auto px-4 py-5 sm:py-7">
+    <div className="max-w-[1100px] mx-auto px-4 py-6">
       {/* profile banner */}
-      <section className="rounded-3xl border border-gray-200/80 bg-white p-5 shadow-sm sm:p-7">
-        <div className="flex flex-col gap-5 sm:flex-row sm:items-center sm:justify-between">
-          <div className="flex min-w-0 items-center gap-4">
-            <Avatar src={user.avatar} username={user.username} size={64} className="shrink-0 ring-1 ring-gray-200" />
+      <div className="relative rounded-3xl bg-white border border-gray-200/70 shadow-sm p-5 md:p-7">
+        <div className="flex flex-wrap items-center justify-between gap-4">
+          <div className="flex items-center gap-3.5 min-w-0">
+            <Avatar src={user.avatar} username={user.username} size={52} className="ring-2 ring-[#0487d9]/20 shrink-0" />
             <div className="min-w-0">
-              <div className="flex flex-wrap items-center gap-2.5">
-                <h1 className="truncate text-xl font-extrabold text-ink sm:text-2xl">{user.full_name}</h1>
-                <span className={`rounded-full px-2.5 py-1 text-[10px] font-bold ring-1 ${rm.cls}`}>{rm.label}</span>
+              <div className="text-[12px] font-semibold text-gray-400">Halo, 👋</div>
+              <div className="flex flex-wrap items-center gap-2">
+                <h1 className="text-lg sm:text-xl font-extrabold text-ink truncate">{user.full_name}</h1>
+                <span className={`text-[10px] font-bold uppercase tracking-wide px-2 py-0.5 rounded-full ring-1 ${rm.cls}`}>{rm.label}</span>
               </div>
-              <div className="mt-1 flex flex-wrap items-center gap-x-3 gap-y-1 text-sm text-gray-500">
-                <span>@{user.username}</span>
-                {user.location && <span className="flex items-center gap-1"><Icon name="mapPin" size={13} /> {user.location}</span>}
-              </div>
-              <p className="mt-2 text-xs text-gray-400">
-                Member sejak {user.created_at ? new Date(user.created_at).toLocaleDateString('id-ID', { month: 'long', year: 'numeric' }) : '—'}
-              </p>
+              <div className="text-[12px] text-gray-500">@{user.username}</div>
             </div>
           </div>
-          <div className="flex items-center gap-2 sm:shrink-0">
-            <button onClick={openEdit} className="btn-outline flex-1 !rounded-xl !px-4 !py-2.5 !text-xs sm:flex-none">
-              Edit Profil
-            </button>
-            <Link to={isFL ? '/create-gig' : '/explore'} className="btn-primary flex-1 !rounded-xl !px-4 !py-2.5 !text-xs sm:flex-none">
-              <Icon name={isFL ? 'plus' : 'search'} size={14} /> {isFL ? 'Buat Jasa' : 'Cari Jasa'}
-            </Link>
-          </div>
+          <Link to="/explore" className="flex-1 sm:flex-none inline-flex items-center justify-center gap-1.5 bg-[#0487d9] hover:bg-[#0370b8] text-white rounded-full px-5 py-2.5 text-sm font-bold shadow-md shadow-blue-500/25 transition-colors">
+            {isFL ? 'Jelajahi Order' : 'Cari Jasa'} <Icon name="arrowRight" size={15} />
+          </Link>
         </div>
-      </section>
+
+        <div className="flex flex-wrap items-center gap-x-4 gap-y-1.5 mt-4 pt-3.5 border-t border-gray-100 text-[12px] text-gray-500">
+          <span>{isFL ? 'Tingkatkan cuanmu' : `${myActive.length} pesanan sedang diproses`}</span>
+          <span className="w-1 h-1 rounded-full bg-gray-300"></span>
+          <span className="flex items-center gap-1">Bergabung {user.created_at ? new Date(user.created_at).toLocaleDateString('id-ID', { month: 'long', year: 'numeric' }) : '—'}</span>
+          {isFL && user.completed_jobs > 0 && (
+            <>
+              <span className="w-1 h-1 rounded-full bg-gray-300"></span>
+              <span className="flex items-center gap-1 text-emerald-600 font-semibold"><Icon name="verified" size={13} /> {user.completed_jobs} project selesai</span>
+            </>
+          )}
+        </div>
+      </div>
 
       {/* stats */}
-      <div className="grid grid-cols-2 gap-3 mt-4 md:grid-cols-4">
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-2.5 mt-5">
         {stats.map((s, i) => (
-          <div key={s.label} className="group relative min-w-0 overflow-hidden rounded-2xl border border-gray-200/70 bg-white p-4 shadow-sm transition-all hover:-translate-y-1 hover:shadow-lg fade-up sm:p-5" style={{ animationDelay: `${i * 60}ms` }}>
-            <div className={`absolute -right-7 -top-7 h-20 w-20 rounded-full bg-gradient-to-br ${s.c} opacity-[.08] transition-transform group-hover:scale-125`} />
-            <div className="flex items-start justify-between gap-2">
-              <div className={`w-10 h-10 rounded-xl bg-gradient-to-br ${s.c} text-white flex items-center justify-center shadow-md shrink-0`}>
-                <Icon name={s.icon} size={18} fill={s.icon === 'starFill' ? 'currentColor' : 'none'} strokeWidth={s.icon === 'starFill' ? 0 : 2} />
-              </div>
-              <Icon name="trend" size={15} className="text-gray-300 transition-colors group-hover:text-[#0e76f1]" />
+          <div key={s.label} className="card p-3.5 sm:p-4 flex items-center gap-2.5 sm:gap-3 fade-up hover:-translate-y-0.5 hover:shadow-md transition-all min-w-0" style={{ animationDelay: `${i * 60}ms` }}>
+            <div className={`w-10 h-10 sm:w-11 sm:h-11 rounded-xl bg-gradient-to-br ${s.c} text-white flex items-center justify-center shadow-md shrink-0`}>
+              <Icon name={s.icon} size={18} fill={s.icon === 'starFill' ? 'currentColor' : 'none'} strokeWidth={s.icon === 'starFill' ? 0 : 2} />
             </div>
-            <div className="relative mt-4 min-w-0">
-              <div className="truncate text-xl font-extrabold leading-none text-ink sm:text-2xl">{s.value}</div>
-              <div className="mt-2 truncate text-xs font-bold text-gray-600">{s.label}</div>
-              {s.sub && <div className="mt-0.5 truncate text-[10px] text-gray-400">{s.sub}</div>}
+            <div className="min-w-0">
+              <div className="font-extrabold text-[15px] sm:text-lg md:text-xl text-ink leading-none truncate">{s.value}</div>
+              <div className="text-[11px] text-gray-500 mt-1 font-medium truncate">{s.label}</div>
+              {s.sub && <div className="text-[10px] text-gray-400 truncate">{s.sub}</div>}
             </div>
           </div>
         ))}
@@ -253,10 +239,10 @@ export default function Dashboard() {
 
       {/* tabs */}
       <div className="mt-6 -mx-4 px-4 lg:mx-0 lg:px-0 overflow-x-auto scrollbar-hide">
-        <div className="flex w-fit min-w-full items-center gap-1 rounded-2xl border border-gray-200/70 bg-white p-1.5 shadow-sm sm:min-w-0">
+        <div className="flex items-center gap-1 w-fit bg-white border rounded-xl p-1.5 min-w-full sm:min-w-0">
           {tabs.map(t => (
             <button key={t.v} onClick={() => setParams({ tab: t.v })}
-                    className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-bold whitespace-nowrap transition-all ${tab === t.v ? 'bg-[#101c3a] text-white shadow-md shadow-slate-900/15' : 'text-gray-500 hover:bg-gray-50 hover:text-ink'}`}>
+                    className={`flex items-center gap-1.5 px-4 py-2 rounded-lg text-sm font-bold whitespace-nowrap transition-all ${tab === t.v ? 'bg-[#0e76f1] text-white shadow-md shadow-blue-500/25' : 'text-gray-600 hover:bg-gray-100'}`}>
               <Icon name={t.icon} size={15} /> {t.l}
             </button>
           ))}
@@ -265,20 +251,17 @@ export default function Dashboard() {
 
       {/* TAB: dashboard ringkasan */}
       {tab === 'dashboard' && (
-        <div className="grid lg:grid-cols-[1.1fr_.9fr] gap-4 mt-5">
-          <div className="rounded-2xl border border-gray-200/70 bg-white p-5 shadow-sm sm:p-6">
+        <div className="grid lg:grid-cols-2 gap-4 mt-5">
+          <div className="card p-5">
             <div className="flex items-center justify-between mb-4">
-              <div>
-                <p className="text-[10px] font-extrabold uppercase tracking-[.14em] text-[#0e76f1]">Aktivitas</p>
-                <h3 className="mt-1 font-extrabold text-ink">Pesanan Terbaru</h3>
-              </div>
-              <Link to="/orders" className="inline-flex items-center gap-1 rounded-full bg-blue-50 px-3 py-1.5 text-[11px] font-bold text-[#0e76f1] hover:bg-blue-100">Lihat semua <Icon name="arrowRight" size={12} /></Link>
+              <h3 className="font-extrabold text-ink flex items-center gap-2"><Icon name="box" size={17} className="text-[#0e76f1]" /> Pesanan Terbaru</h3>
+              <Link to="/orders" className="text-xs font-bold text-[#0e76f1] hover:underline">Lihat semua</Link>
             </div>
             {renderSummaryList(isFL ? incomingOrders.concat(myOrders) : myOrders)}
           </div>
 
           {isFL ? (
-            <div className="rounded-2xl border border-gray-200/70 bg-white p-5 shadow-sm sm:p-6">
+            <div className="card p-5">
               <div className="flex items-center justify-between mb-4">
                 <h3 className="font-extrabold text-ink flex items-center gap-2"><Icon name="briefcase" size={17} className="text-[#6a3cff]" /> Jasa Saya</h3>
                 <Link to="/dashboard?tab=gigs" className="text-xs font-bold text-[#0e76f1] hover:underline">Kelola</Link>
@@ -299,7 +282,7 @@ export default function Dashboard() {
               )}
             </div>
           ) : role === 'admin' ? (
-            <div className="rounded-2xl border border-gray-200/70 bg-white p-5 shadow-sm sm:p-6">
+            <div className="card p-5">
               <div className="flex items-center justify-between mb-4">
                 <h3 className="font-extrabold text-ink flex items-center gap-2"><Icon name="trend" size={17} className="text-emerald-500" /> Status Pesanan</h3>
                 <span className="text-xs font-bold text-gray-400">{orders.length} total</span>
@@ -320,7 +303,7 @@ export default function Dashboard() {
               </div>
             </div>
           ) : (
-            <div className="rounded-2xl border border-gray-200/70 bg-white p-5 shadow-sm sm:p-6">
+            <div className="card p-5">
               <div className="flex items-center justify-between mb-4">
                 <h3 className="font-extrabold text-ink flex items-center gap-2"><Icon name="sparkles" size={17} className="text-[#6a3cff]" /> Jasa Rekomendasi</h3>
                 <Link to="/explore" className="text-xs font-bold text-[#0e76f1] hover:underline">Lihat semua</Link>
@@ -393,7 +376,7 @@ export default function Dashboard() {
 
       {/* Aktivitas terbaru */}
       {tab === 'dashboard' && orders.length > 0 && (
-        <div className="mt-4 rounded-2xl border border-gray-200/70 bg-white p-5 shadow-sm sm:p-6">
+        <div className="card p-5 mt-4">
           <div className="flex items-center justify-between mb-4">
             <h3 className="font-extrabold text-ink flex items-center gap-2"><Icon name="clock" size={17} className="text-[#0e76f1]" /> Aktivitas Terbaru</h3>
             <Link to="/dashboard?tab=orders" className="text-xs font-bold text-[#0e76f1] hover:underline">Semua pesanan</Link>
@@ -568,10 +551,9 @@ export default function Dashboard() {
 
       {/* edit profile modal */}
       {editOpen && (
-        <div className="fixed inset-0 z-[90] overflow-y-auto overscroll-contain">
+        <div className="fixed inset-0 z-[90] flex items-end sm:items-center justify-center">
           <div className="absolute inset-0 bg-black/40 slide-in-left-face" onClick={() => setEditOpen(false)}></div>
-          <div className="relative flex min-h-full items-start justify-center pt-12 sm:items-center sm:p-4">
-          <form onSubmit={saveEdit} className="relative w-full rounded-t-3xl bg-white p-5 pb-[max(24px,env(safe-area-inset-bottom))] shadow-2xl slide-down sm:max-h-[calc(100dvh-32px)] sm:max-w-md sm:overflow-y-auto sm:rounded-3xl sm:p-6">
+          <form onSubmit={saveEdit} className="relative w-full sm:max-w-md bg-white sm:rounded-3xl rounded-t-3xl shadow-2xl slide-down p-6">
             <div className="flex items-center justify-between mb-5">
               <h3 className="font-extrabold text-ink flex items-center gap-2"><Icon name="edit" size={18} className="text-[#0e76f1]" /> Edit Profil</h3>
               <button type="button" onClick={() => setEditOpen(false)} className="p-2 rounded-full hover:bg-gray-100 text-gray-500"><Icon name="x" size={18} /></button>
@@ -587,16 +569,16 @@ export default function Dashboard() {
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
                   <label className="text-xs font-bold text-gray-700 uppercase tracking-wide mb-1.5 block">Username</label>
-                  <input value={editForm.username} onChange={e => setEditForm({ ...editForm, username: e.target.value.replace(/\s/g, '') })} className="input-field" autoComplete="username" required />
+                  <input value={editForm.username} onChange={e => setEditForm({ ...editForm, username: e.target.value.trim() })} className="input-field" required />
                 </div>
                 <div>
                   <label className="text-xs font-bold text-gray-700 uppercase tracking-wide mb-1.5 block">Email</label>
-                  <input type="email" value={editForm.email} onChange={e => setEditForm({ ...editForm, email: e.target.value })} className="input-field" autoComplete="email" required />
+                  <input type="email" value={editForm.email} onChange={e => setEditForm({ ...editForm, email: e.target.value.trim() })} className="input-field" required />
                 </div>
               </div>
               <div>
                 <label className="text-xs font-bold text-gray-700 uppercase tracking-wide mb-1.5 block">Nama Lengkap</label>
-                <input value={editForm.full_name} onChange={e => setEditForm({ ...editForm, full_name: e.target.value })} className="input-field" autoComplete="name" required />
+                <input value={editForm.full_name} onChange={e => setEditForm({ ...editForm, full_name: e.target.value })} className="input-field" required />
               </div>
               <div>
                 <label className="text-xs font-bold text-gray-700 uppercase tracking-wide mb-1.5 block">Lokasi</label>
@@ -612,7 +594,6 @@ export default function Dashboard() {
               {editSaving ? <span className="inline-block w-4 h-4 border-2 border-white/40 border-t-white rounded-full animate-spin"></span> : 'Simpan Perubahan'}
             </button>
           </form>
-          </div>
         </div>
       )}
     </div>
