@@ -3,6 +3,7 @@ package main
 import (
 	"log"
 	"os"
+	"strings"
 
 	"fastwork-backend/internal/config"
 	"fastwork-backend/internal/routes"
@@ -13,7 +14,7 @@ func main() {
 
 	r := routes.SetupRouter()
 
-	port := os.Getenv("PORT")
+	port := strings.TrimSpace(os.Getenv("PORT"))
 	if port == "" {
 		port = "8080"
 	}

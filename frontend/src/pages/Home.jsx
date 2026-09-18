@@ -22,6 +22,81 @@ function SkeletonCard() {
 
 const ROTATE_WORDS = ['desain logo', 'website', 'video animasi', 'feed instagram', 'copywriting', 'aplikasi mobile']
 
+const TESTIMONIALS = [
+  { name: 'Rina Wulandari', role: 'Owner Kopi Mambruk', av: 'https://i.pravatar.cc/100?img=47', txt: 'Bikin website & logo UMKM jadi gampang. Desainernya sabar, revisi dikerjakan cepat. Bisnis aku langsung terlihat profesional.' },
+  { name: 'Dimas Prakoso', role: 'Founder Startup Tech', av: 'https://i.pravatar.cc/100?img=32', txt: 'Aplikasi Flutter selesai 2 minggu lebih cepat dari target. Komunikasi freelancer sangat lancar, hasil di luar ekspektasi.' },
+  { name: 'Sari Nugroho', role: 'Influencer & Konten Kreator', av: 'https://i.pravatar.cc/100?img=20', txt: 'Feed IG-ku sekarang estetik banget. Paket 30 post + template canva bikin konten konsisten tanpa pusing.' },
+]
+
+function TestimonialCarousel() {
+  const [idx, setIdx] = useState(0)
+  const [paused, setPaused] = useState(false)
+  const [dir, setDir] = useState(1)
+  const touchX = useRef(null)
+  const n = TESTIMONIALS.length
+
+  useEffect(() => {
+    if (paused) return
+    const t = setInterval(() => { setDir(1); setIdx(i => (i + 1) % n) }, 5000)
+    return () => clearInterval(t)
+  }, [paused, n])
+
+  const go = (d) => { setDir(d); setIdx(i => (i + d + n) % n) }
+  const t = TESTIMONIALS[idx]
+
+  return (
+    <div
+      className="max-w-2xl mx-auto"
+      onMouseEnter={() => setPaused(true)}
+      onMouseLeave={() => setPaused(false)}
+      onTouchStart={(e) => { touchX.current = e.touches[0].clientX }}
+      onTouchEnd={(e) => {
+        if (touchX.current == null) return
+        const dx = e.changedTouches[0].clientX - touchX.current
+        if (Math.abs(dx) > 40) go(dx < 0 ? 1 : -1)
+        touchX.current = null
+      }}
+    >
+      <div className="relative card p-6 sm:p-8 text-center overflow-hidden">
+        <div className="absolute top-0 left-0 right-0 h-1 bg-gray-100">
+          {!paused && <div key={idx} className="h-full bg-gradient-to-r from-amber-500 to-orange-500 animate-flow-line" style={{ animationDuration: '5s' }}></div>}
+        </div>
+        <div key={idx} className={dir === 1 ? 'slide-up' : 'slide-down'}>
+          <div className="flex justify-center"><Stars rating={5} size={18} /></div>
+          <p className="text-base sm:text-lg text-gray-700 leading-relaxed mt-4 font-medium">“{t.txt}”</p>
+          <div className="flex items-center justify-center gap-3 mt-6">
+            <div className="rounded-full p-0.5 bg-gradient-to-br from-amber-500 to-orange-500">
+              <img src={t.av} alt={t.name} className="w-12 h-12 rounded-full object-cover ring-2 ring-white" loading="lazy" />
+            </div>
+            <div className="text-left">
+              <div className="text-sm font-bold text-ink flex items-center gap-1.5">{t.name} <Icon name="verified" size={15} className="text-[#0e76f1]" /></div>
+              <div className="text-xs text-gray-500">{t.role}</div>
+            </div>
+          </div>
+        </div>
+        <button onClick={() => go(-1)} aria-label="Testimoni sebelumnya" className="absolute left-3 top-1/2 -translate-y-1/2 w-9 h-9 rounded-full bg-white border shadow-sm flex items-center justify-center text-gray-500 hover:text-[#0e76f1] hover:border-[#0e76f1] hover:scale-105 active:scale-95 transition-all">
+          <Icon name="chevRight" size={18} className="rotate-180" />
+        </button>
+        <button onClick={() => go(1)} aria-label="Testimoni berikutnya" className="absolute right-3 top-1/2 -translate-y-1/2 w-9 h-9 rounded-full bg-white border shadow-sm flex items-center justify-center text-gray-500 hover:text-[#0e76f1] hover:border-[#0e76f1] hover:scale-105 active:scale-95 transition-all">
+          <Icon name="chevRight" size={18} />
+        </button>
+      </div>
+      <div className="flex items-center justify-center gap-2.5 mt-5">
+        {TESTIMONIALS.map((x, i) => (
+          <button
+            key={x.name}
+            onClick={() => { setDir(i > idx ? 1 : -1); setIdx(i) }}
+            aria-label={`Ke testimoni ${x.name}`}
+            className={`rounded-full transition-all duration-300 overflow-hidden ${i === idx ? 'w-10 h-10 ring-2 ring-amber-500 ring-offset-2 scale-105' : 'w-8 h-8 opacity-50 hover:opacity-100 hover:scale-105'}`}
+          >
+            <img src={x.av} alt="" className="w-full h-full object-cover" loading="lazy" />
+          </button>
+        ))}
+      </div>
+    </div>
+  )
+}
+
 function SearchSuggest() {
   const navigate = useNavigate()
   const [q, setQ] = useState('')
@@ -259,21 +334,29 @@ export default function Home() {
             <h2 className="text-2xl md:text-3xl font-extrabold text-ink mt-1.5">Cara Kerja <span className="bg-gradient-to-r from-[#0e76f1] to-[#6a3cff] bg-clip-text text-transparent">masalahta.id</span></h2>
             <p className="text-sm text-gray-500 mt-2">Tiga langkah mudah untuk mulai project kamu</p>
           </div>
-          <div className="grid md:grid-cols-3 gap-6">
-            {[
-              { icon: 'search', step: '01', t: 'Cari Jasa', d: 'Temukan freelancer & paket yang sesuai kebutuhan dan budget kamu', c: 'bg-blue-50 text-[#0e76f1]' },
-              { icon: 'chat', step: '02', t: 'Pesan & Bayar', d: 'Chat freelancer, kirim brief. Dana aman di escrow hingga project selesai', c: 'bg-amber-50 text-amber-600' },
-              { icon: 'verified', step: '03', t: 'Terima Hasil', d: 'Revisi sampai puas, dana dicairkan ke freelancer setelah approve', c: 'bg-emerald-50 text-emerald-600' },
-            ].map((s, i) => (
-              <div key={s.step} className="relative card p-6 pt-8 text-center hover:-translate-y-1 hover:shadow-lift transition-all fade-up" style={{ animationDelay: `${i * 80}ms` }}>
-                <span className="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-gradient-to-r from-[#0e76f1] to-[#6a3cff] text-white text-[11px] font-extrabold px-3 py-1 rounded-full shadow-md">{s.step}</span>
-                <div className={`w-14 h-14 rounded-2xl ${s.c} flex items-center justify-center mx-auto mb-4`}>
-                  <Icon name={s.icon} size={26} />
+          <div className="relative">
+            <span className="hidden md:block absolute top-8 left-[16%] right-[16%] h-0.5 rounded-full overflow-hidden bg-gray-100" aria-hidden="true"><span className="absolute inset-0 origin-left bg-gradient-to-r from-[#0e76f1] via-[#6a3cff] to-emerald-400 animate-flow-line"></span></span>
+            <div className="relative grid md:grid-cols-3 gap-8 md:gap-6">
+              {[
+                { icon: 'search', step: '01', t: 'Cari Jasa', d: 'Temukan freelancer & paket yang sesuai kebutuhan dan budget kamu', c: 'bg-blue-50 text-[#0e76f1] ring-blue-100' },
+                { icon: 'chat', step: '02', t: 'Pesan & Bayar', d: 'Chat freelancer, kirim brief. Dana aman di escrow hingga project selesai', c: 'bg-amber-50 text-amber-600 ring-amber-100' },
+                { icon: 'verified', step: '03', t: 'Terima Hasil', d: 'Revisi sampai puas, dana dicairkan ke freelancer setelah approve', c: 'bg-emerald-50 text-emerald-600 ring-emerald-100' },
+              ].map((s, i) => (
+                <div key={s.step} className="relative text-center fade-up group cursor-default" style={{ animationDelay: `${i * 200}ms` }}>
+                  <div className="relative inline-flex animate-flow-node transition-transform duration-300 group-hover:-translate-y-2 group-hover:scale-105" style={{ animationDelay: `${300 + i * 250}ms` }}>
+                    <div className={`w-16 h-16 rounded-full ${s.c} ring-4 flex items-center justify-center bg-white relative z-10 transition-all duration-300 group-hover:shadow-xl group-hover:shadow-blue-500/20 [&_svg]:transition-transform [&_svg]:duration-300 group-hover:[&_svg]:scale-110 group-hover:[&_svg]:-rotate-6`}>
+                      <Icon name={s.icon} size={26} />
+                    </div>
+                    <span className="absolute -top-2 -right-2 z-20 bg-gradient-to-r from-[#0e76f1] to-[#6a3cff] text-white text-[11px] font-extrabold w-7 h-7 rounded-full flex items-center justify-center shadow-md ring-4 ring-white animate-flow-ping" style={{ animationDelay: `${900 + i * 250}ms` }}>{i + 1}</span>
+                  </div>
+                  <h3 className="font-extrabold text-ink mt-4 transition-colors duration-300 group-hover:text-[#0e76f1]">{s.t}</h3>
+                  <p className="text-sm text-gray-500 leading-relaxed mt-1.5 max-w-[280px] mx-auto">{s.d}</p>
+                  {i < 2 && (
+                    <Icon name="chevRight" size={20} className="hidden md:block absolute top-6 -right-4 text-[#0e76f1] animate-flow-nudge" />
+                  )}
                 </div>
-                <h3 className="font-extrabold text-ink mb-1.5">{s.t}</h3>
-                <p className="text-sm text-gray-500 leading-relaxed">{s.d}</p>
-              </div>
-            ))}
+              ))}
+            </div>
           </div>
         </div>
       </section>
@@ -281,56 +364,39 @@ export default function Home() {
       {/* TESTIMONIALS */}
       <section className="max-w-[1240px] mx-auto px-4 mt-14">
         <div className="text-center mb-8">
-          <div className="text-[11px] font-extrabold uppercase tracking-wider text-amber-500">Testimoni</div>
-          <h2 className="text-2xl md:text-3xl font-extrabold text-ink mt-1.5">Kata Mereka yang Sudah <span className="bg-gradient-to-r from-amber-500 to-orange-500 bg-clip-text text-transparent">Berhasil</span></h2>
+          <div className="text-[11px] font-extrabold uppercase tracking-wider text-[#0e76f1]">Testimoni</div>
+          <h2 className="text-2xl md:text-3xl font-extrabold text-ink mt-1.5"><span className="bg-gradient-to-r from-[#0e76f1] to-[#6a3cff] bg-clip-text text-transparent">Ulasan Pelanggan</span></h2>
         </div>
-        <div className="grid md:grid-cols-3 gap-4">
-          {[
-            { name: 'Rina Wulandari', role: 'Owner Kopi Mambruk', av: 'https://i.pravatar.cc/100?img=47', txt: 'Bikin website & logo UMKM jadi gampang. Desainernya sabar, revisi dikerjakan cepat. Bisnis aku langsung terlihat profesional.' },
-            { name: 'Dimas Prakoso', role: 'Founder Startup Tech', av: 'https://i.pravatar.cc/100?img=32', txt: 'Aplikasi Flutter selesai 2 minggu lebih cepat dari target. Komunikasi freelancer sangat lancar, hasil di luar ekspektasi.' },
-            { name: 'Sari Nugroho', role: 'Influencer & Konten Kreator', av: 'https://i.pravatar.cc/100?img=20', txt: 'Feed IG-ku sekarang estetik banget. Paket 30 post + template canva bikin konten konsisten tanpa pusing.' },
-          ].map((t, i) => (
-            <div key={t.name} className="card p-6 flex flex-col fade-up hover:-translate-y-1 hover:shadow-lift transition-all" style={{ animationDelay: `${i * 80}ms` }}>
-              <Stars rating={5} size={16} />
-              <p className="text-sm text-gray-600 leading-relaxed mt-3 flex-1">“{t.txt}”</p>
-              <div className="flex items-center gap-3 mt-4 pt-4 border-t">
-                <div className="rounded-full p-0.5 bg-gradient-to-br from-[#0e76f1] to-[#6a3cff]">
-                  <img src={t.av} alt="" className="w-10 h-10 rounded-full object-cover ring-2 ring-white" loading="lazy" />
-                </div>
-                <div>
-                  <div className="text-sm font-bold text-ink">{t.name}</div>
-                  <div className="text-xs text-gray-500">{t.role}</div>
-                </div>
-                <Icon name="verified" size={16} className="ml-auto text-[#0e76f1]" />
-              </div>
-            </div>
-          ))}
-        </div>
+        <TestimonialCarousel />
       </section>
 
       {/* CTA */}
       <section className="max-w-[1240px] mx-auto px-4 mt-14">
-        <div className="relative overflow-hidden rounded-3xl border border-gray-200/80 bg-gradient-to-b from-[#edf4ff] via-white to-[#f5f0ff] px-6 py-10 sm:px-10 sm:py-12 md:px-14 md:py-16 text-center shadow-sm">
-          <ParticleBg />
-          <div className="relative">
-            <span className="inline-flex items-center gap-2 rounded-full bg-white text-[#0e76f1] ring-1 ring-blue-200/70 shadow-sm px-3.5 py-1.5 text-[11px] font-extrabold uppercase tracking-wider">
-              <Icon name="briefcase" size={13} /> Untuk Freelancer
+        <div className="relative overflow-hidden rounded-3xl border border-gray-200/70 bg-gradient-to-b from-[#f5f9ff] via-white to-white px-6 py-10 sm:px-10 sm:py-14 md:px-14 text-center shadow-[0_24px_70px_-30px_rgba(14,118,241,0.35)]">
+          <div className="absolute inset-x-0 top-0 h-1 bg-gradient-to-r from-[#0e76f1] via-[#6a3cff] to-[#0e76f1]" aria-hidden="true"></div>
+          <div className="absolute -top-20 left-1/4 w-64 h-64 rounded-full bg-blue-100/60 blur-3xl" aria-hidden="true"></div>
+          <div className="absolute -bottom-24 right-1/4 w-64 h-64 rounded-full bg-violet-100/60 blur-3xl" aria-hidden="true"></div>
+          <div className="relative max-w-xl mx-auto">
+            <span className="inline-flex items-center gap-2 rounded-full bg-white border border-blue-100 shadow-sm px-3.5 py-1.5 text-[11px] font-bold uppercase tracking-wider text-[#0e76f1]">
+              <span className="w-6 h-6 rounded-full bg-gradient-to-br from-[#0e76f1] to-[#6a3cff] text-white flex items-center justify-center"><Icon name="briefcase" size={12} /></span> Untuk Freelancer
             </span>
-            <h2 className="mt-4 text-[24px] sm:text-[30px] md:text-[36px] font-extrabold text-ink leading-[1.15] tracking-tight max-w-2xl mx-auto">
-              Punya Skill? Jadi Freelancer & <span className="text-[#0e76f1]">Mulai Cuan</span>
+            <h2 className="mt-5 text-[26px] sm:text-[32px] md:text-[36px] font-extrabold text-ink leading-[1.12] tracking-tight">
+              Punya Skill? Jadi Freelancer & <span className="bg-gradient-to-r from-[#0e76f1] to-[#6a3cff] bg-clip-text text-transparent">Mulai Cuan</span>
             </h2>
             <p className="mt-3 text-gray-500 text-[14px] sm:text-[15px] leading-relaxed max-w-md mx-auto">
               Buat jasa kamu sekarang, terima order, dan wujudkan penghasilan impianmu.
             </p>
-            <div className="mt-7 flex flex-col sm:flex-row gap-2.5 sm:gap-3 max-w-md mx-auto">
-              <Link to="/register" className="btn-primary flex-1 !py-3.5">
-                Daftar Jadi Freelancer <Icon name="arrowRight" size={16} />
+            <div className="mt-8 flex flex-col sm:flex-row gap-2.5 max-w-md mx-auto">
+              <Link to="/register" className="btn-primary flex-1 !py-3.5 !text-[15px] !shadow-lg !shadow-blue-600/25 group">
+                Daftar Jadi Freelancer <Icon name="arrowRight" size={16} className="transition-transform group-hover:translate-x-0.5" />
               </Link>
-              <Link to="/explore" className="btn-outline flex-1 !py-3.5">Jelajahi Jasa</Link>
+              <Link to="/explore" className="btn-outline flex-1 !py-3.5 !bg-white">Jelajahi Jasa</Link>
             </div>
-            <div className="mt-8 pt-6 border-t border-gray-200/70 flex flex-wrap items-center justify-center gap-x-6 gap-y-2.5 text-[12.5px] font-semibold text-gray-500">
+            <div className="mt-8 inline-flex flex-wrap items-center justify-center gap-x-5 gap-y-2 rounded-full bg-gray-50/80 border border-gray-100 px-5 py-2.5 text-[12.5px] font-medium text-gray-500">
               <span className="flex items-center gap-1.5"><Icon name="check" size={14} className="text-emerald-500" /> Gratis daftar</span>
+              <span className="w-1 h-1 rounded-full bg-gray-300" aria-hidden="true"></span>
               <span className="flex items-center gap-1.5"><Icon name="check" size={14} className="text-emerald-500" /> Pembayaran aman</span>
+              <span className="w-1 h-1 rounded-full bg-gray-300" aria-hidden="true"></span>
               <span className="flex items-center gap-1.5"><Icon name="check" size={14} className="text-emerald-500" /> Pencairan cepat</span>
             </div>
           </div>

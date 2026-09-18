@@ -14,6 +14,9 @@ type User struct {
 	Role          string    `gorm:"size:20;default:client" json:"role"` // freelancer, client, admin
 	Location      string    `json:"location"`
 	Bio           string    `json:"bio"`
+	Phone         string    `json:"phone"`
+	Skills        string    `json:"skills"` // comma-separated
+	Website       string    `json:"website"`
 	Rating        float64   `json:"rating"`
 	ReviewCount   int       `json:"review_count"`
 	CompletedJobs int       `json:"completed_jobs"`
@@ -81,8 +84,69 @@ type Review struct {
 	GigID        uint      `json:"gig_id"`
 	OrderID      uint      `json:"order_id"`
 	UserID       uint      `json:"user_id"`
-	User         User      `json:"user"`
+	User         User      `gorm:"foreignKey:UserID" json:"user"`
 	Rating       int       `json:"rating"`
 	Comment      string    `json:"comment"`
 	CreatedAt    time.Time `json:"created_at"`
+}
+
+type PasswordReset struct {
+	ID        uint      `gorm:"primaryKey" json:"id"`
+	UserID    uint      `gorm:"index" json:"user_id"`
+	Token     string    `gorm:"uniqueIndex;size:64" json:"-"`
+	ExpiresAt time.Time `json:"expires_at"`
+	Used      bool      `json:"-"`
+	CreatedAt time.Time `json:"created_at"`
+}
+
+type Wishlist struct {
+	ID        uint      `gorm:"primaryKey" json:"id"`
+	UserID    uint      `gorm:"uniqueIndex:idx_wishlist_user_gig" json:"user_id"`
+	GigID     uint      `gorm:"uniqueIndex:idx_wishlist_user_gig" json:"gig_id"`
+	Gig       Gig       `gorm:"foreignKey:GigID" json:"gig"`
+	CreatedAt time.Time `json:"created_at"`
+}
+
+type Notification struct {
+	ID        uint      `gorm:"primaryKey" json:"id"`
+	UserID    uint      `gorm:"index" json:"user_id"`
+	Type      string    `gorm:"size:20" json:"type"` // order, payment, review, system
+	Title     string    `json:"title"`
+	Desc      string    `json:"desc"`
+	Link      string    `json:"link"`
+	Read      bool      `json:"read"`
+	CreatedAt time.Time `json:"created_at"`
+}
+
+type ContactMessage struct {
+	ID        uint      `gorm:"primaryKey" json:"id"`
+	Name      string    `json:"name"`
+	Email     string    `json:"email"`
+	Subject   string    `json:"subject"`
+	Message   string    `json:"message"`
+	CreatedAt time.Time `json:"created_at"`
+}
+
+type Message struct {
+	ID             uint      `gorm:"primaryKey" json:"id"`
+	OrderID        uint      `json:"order_id"`
+	ConversationID uint      `gorm:"index" json:"conversation_id"`
+	SenderID       uint      `json:"sender_id"`
+	Sender         User      `gorm:"foreignKey:SenderID" json:"sender"`
+	Body           string    `json:"body"`
+	CreatedAt      time.Time `json:"created_at"`
+}
+
+type Conversation struct {
+	ID           uint      `gorm:"primaryKey" json:"id"`
+	ClientID     uint      `gorm:"index" json:"client_id"`
+	Client       User      `gorm:"foreignKey:ClientID" json:"client"`
+	FreelancerID uint      `gorm:"index" json:"freelancer_id"`
+	Freelancer   User      `gorm:"foreignKey:FreelancerID" json:"freelancer"`
+	GigID        *uint     `json:"gig_id"`
+	Gig          Gig       `gorm:"foreignKey:GigID" json:"gig"`
+	OrderID      *uint     `json:"order_id"`
+	Order        Order     `gorm:"foreignKey:OrderID" json:"order"`
+	CreatedAt    time.Time `json:"created_at"`
+	UpdatedAt    time.Time `json:"updated_at"`
 }

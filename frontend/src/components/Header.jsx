@@ -4,6 +4,9 @@ import { useAuth } from '../context/AuthContext'
 import api from '../utils/api'
 import Icon from './Icon'
 import Avatar from './Avatar'
+import NotificationMenu from './NotificationMenu'
+import WishlistMenu from './WishlistMenu'
+import { useWishlist } from '../context/WishlistContext'
 
 function Logo() {
   return (
@@ -45,7 +48,7 @@ function SearchBar({ q, setQ, inputRef }) {
   }
 
   return (
-    <form ref={boxRef} onSubmit={submit} className="relative flex-1 max-w-[520px]">
+    <form ref={boxRef} onSubmit={submit} className="relative flex-1 w-full">
       <div className="group flex items-center bg-gray-50 border border-transparent rounded-full px-3 py-2 transition-all focus-within:bg-white focus-within:border-blue-100 focus-within:ring-4 focus-within:ring-blue-500/10 hover:bg-white hover:border-gray-200">
         <Icon name="search" size={18} className="text-gray-400 mx-1.5 shrink-0 transition-colors group-focus-within:text-[#0e76f1]" />
         <input
@@ -93,6 +96,7 @@ function AccountMenu({ user, logout, navigate }) {
   }, [])
   const menu = [
     { label: 'Ringkasan', icon: 'grid', to: '/dashboard' },
+    { label: 'Pesan', icon: 'chat', to: '/messages' },
     { label: 'Pesanan', icon: 'box', to: '/orders' },
     { label: 'Jasa Saya', icon: 'briefcase', to: '/dashboard?tab=gigs' },
   ]
@@ -130,10 +134,12 @@ function MobileBottomNav({ user }) {
     if (pathname === '/') return 'home'
     if (pathname.startsWith('/explore')) return 'explore'
     if (pathname.startsWith('/create-gig')) return 'sell'
+    if (pathname.startsWith('/messages')) return 'chat'
     if (pathname.startsWith('/orders')) return 'orders'
     if (pathname.startsWith('/dashboard')) return 'account'
     return ''
   })()
+  const isFL = user?.role === 'freelancer'
   const go = (to) => { if (pathname !== to) navigate(to) }
   const renderItem = (active, to, title, label, icon, avatar) => (
     <button
@@ -162,17 +168,31 @@ function MobileBottomNav({ user }) {
           {renderItem(tab === 'explore', '/explore', 'Jelajahi', 'Jelajahi', 'search')}
 
           <div className="h-[54px] flex justify-center">
-            <button
-              onClick={() => go('/create-gig')}
-              title="Buat Jasa"
-              aria-current={tab === 'sell' ? 'page' : undefined}
-              className={`w-full h-[54px] flex flex-col items-center justify-center gap-1 rounded-2xl transition-all duration-200 active:scale-95 ${tab === 'sell' ? 'bg-blue-50' : 'hover:bg-gray-50'}`}
-            >
-              <span className={`w-7 h-7 rounded-xl bg-gradient-to-br from-[#0e76f1] to-[#6a3cff] flex items-center justify-center text-white shadow-sm transition-transform ${tab === 'sell' ? 'scale-105 shadow-blue-500/25' : ''}`}>
-                <Icon name="plus" size={17} strokeWidth={3} />
-              </span>
-              <span className={`text-[10px] leading-none font-bold whitespace-nowrap ${tab === 'sell' ? 'text-[#0e76f1]' : 'text-gray-500'}`}>Jual Jasa</span>
-            </button>
+            {isFL ? (
+              <button
+                onClick={() => go('/create-gig')}
+                title="Buat Jasa"
+                aria-current={tab === 'sell' ? 'page' : undefined}
+                className={`w-full h-[54px] flex flex-col items-center justify-center gap-1 rounded-2xl transition-all duration-200 active:scale-95 ${tab === 'sell' ? 'bg-blue-50' : 'hover:bg-gray-50'}`}
+              >
+                <span className={`w-7 h-7 rounded-xl bg-gradient-to-br from-[#0e76f1] to-[#6a3cff] flex items-center justify-center text-white shadow-sm transition-transform ${tab === 'sell' ? 'scale-105 shadow-blue-500/25' : ''}`}>
+                  <Icon name="plus" size={17} strokeWidth={3} />
+                </span>
+                <span className={`text-[10px] leading-none font-bold whitespace-nowrap ${tab === 'sell' ? 'text-[#0e76f1]' : 'text-gray-500'}`}>Jual Jasa</span>
+              </button>
+            ) : (
+              <button
+                onClick={() => go(user ? '/messages' : '/login')}
+                title="Pesan"
+                aria-current={tab === 'chat' ? 'page' : undefined}
+                className={`w-full h-[54px] flex flex-col items-center justify-center gap-1 rounded-2xl transition-all duration-200 active:scale-95 ${tab === 'chat' ? 'bg-blue-50' : 'hover:bg-gray-50'}`}
+              >
+                <span className={`w-7 h-7 rounded-xl bg-gradient-to-br from-[#0e76f1] to-[#6a3cff] flex items-center justify-center text-white shadow-sm transition-transform ${tab === 'chat' ? 'scale-105 shadow-blue-500/25' : ''}`}>
+                  <Icon name="chat" size={16} />
+                </span>
+                <span className={`text-[10px] leading-none font-bold whitespace-nowrap ${tab === 'chat' ? 'text-[#0e76f1]' : 'text-gray-500'}`}>Pesan</span>
+              </button>
+            )}
           </div>
 
           {renderItem(tab === 'orders', user ? '/orders' : '/login', 'Pesanan', 'Pesanan', 'box')}
@@ -185,13 +205,14 @@ function MobileBottomNav({ user }) {
 
 export default function Header() {
   const { user, logout } = useAuth()
-  const { pathname } = useLocation()
+  const { pathname, search } = useLocation()
   const [q, setQ] = useState('')
   const [cats, setCats] = useState([])
   const [mobileSearch, setMobileSearch] = useState(false)
   const [scrolled, setScrolled] = useState(false)
   const mobileInputRef = useRef(null)
   const navigate = useNavigate()
+  const { ids: wishlistIds } = useWishlist()
 
   const toggleMobileSearch = () => {
     setMobileSearch((v) => {
@@ -215,13 +236,26 @@ export default function Header() {
     return () => window.removeEventListener('scroll', onScroll)
   }, [])
 
-  const scrollTo = (id) => {
-    const el = document.getElementById(id)
-    if (el) el.scrollIntoView({ behavior: 'smooth' })
+  const goToGigs = () => {
+    if (pathname === '/') {
+      const el = document.getElementById('gigs')
+      if (el) {
+        el.scrollIntoView({ behavior: 'smooth' })
+        return
+      }
+    }
+    navigate('/explore')
   }
 
   const isExplore = pathname.startsWith('/explore')
   const isCreate = pathname.startsWith('/create-gig')
+  const activeCat = new URLSearchParams(search).get('category')
+  const catCls = (slug) => `flex items-center gap-1.5 whitespace-nowrap rounded-full px-3.5 py-1.5 text-[13px] transition-colors ${
+    activeCat === slug ? 'font-semibold text-[#0e76f1] bg-blue-100/80' : 'font-medium text-gray-600 hover:text-[#0e76f1] hover:bg-blue-50'
+  }`
+  const catClsMobile = (slug) => `shrink-0 whitespace-nowrap rounded-full px-3 py-1.5 text-xs transition-colors ${
+    activeCat === slug ? 'font-bold text-[#0e76f1] bg-blue-100/80' : 'font-medium text-gray-600 hover:text-[#0e76f1] hover:bg-blue-50'
+  }`
 
   const navCls = (active) => `relative text-sm font-semibold px-3.5 py-2 rounded-full transition-colors ${
     active ? 'text-[#0e76f1] bg-blue-50/80' : 'text-gray-700 hover:text-[#0e76f1] hover:bg-gray-50'
@@ -230,7 +264,7 @@ export default function Header() {
   return (
     <header className="sticky top-0 z-50">
       {/* top bar */}
-      <div className={`relative z-10 bg-white/90 backdrop-blur-md border-b transition-[box-shadow,border-color] duration-300 ${scrolled ? 'border-transparent shadow-[0_8px_30px_rgba(16,24,40,.07)]' : 'border-gray-200/70'}`}>
+      <div className={`relative z-20 bg-white/90 backdrop-blur-md border-b transition-[box-shadow,border-color] duration-300 ${scrolled ? 'border-transparent shadow-[0_8px_30px_rgba(16,24,40,.07)]' : 'border-gray-200/70'}`}>
         <div className="max-w-[1240px] mx-auto px-3 sm:px-4 h-14 md:h-16 flex items-center gap-3 md:gap-5">
           <Logo />
           <div className="hidden md:block flex-1"><SearchBar q={q} setQ={setQ} /></div>
@@ -238,18 +272,15 @@ export default function Header() {
             {!user ? (
               <>
                 <Link to="/explore" className={navCls(isExplore)}>Jelajahi</Link>
-                <button onClick={() => scrollTo('gigs')} className="relative text-sm font-semibold px-3.5 py-2 rounded-full text-gray-700 hover:text-[#0e76f1] hover:bg-gray-50 transition-colors">Kategori</button>
                 <Link to="/login" className="text-sm font-semibold text-gray-700 hover:text-[#0e76f1] px-3.5 py-2 rounded-full hover:bg-blue-50 transition-colors">Masuk</Link>
                 <Link to="/register" className="bg-gradient-to-r from-[#0e76f1] to-[#0b5fd0] text-white rounded-full px-5 py-2.5 text-sm font-bold shadow-md shadow-blue-600/20 hover:shadow-lg hover:shadow-blue-600/30 hover:-translate-y-px hover:brightness-110 transition-all">Daftar Gratis</Link>
               </>
             ) : (
               <>
                 <Link to="/explore" className={navCls(isExplore)}>Jelajahi</Link>
-                <Link to="/create-gig" className={navCls(isCreate)}>Jual Jasa</Link>
-                <button title="Pesan" className="relative p-2.5 rounded-full hover:bg-gray-100 transition-colors text-gray-600">
-                  <Icon name="bell" size={20} />
-                  <span className="absolute top-2 right-2 w-2 h-2 rounded-full bg-[#ff4d4f] ring-2 ring-white"></span>
-                </button>
+                {user.role === 'freelancer' && <Link to="/create-gig" className={navCls(isCreate)}>Jual Jasa</Link>}
+                <WishlistMenu />
+                <NotificationMenu />
                 <AccountMenu user={user} logout={logout} navigate={navigate} />
               </>
             )}
@@ -257,6 +288,16 @@ export default function Header() {
 
           {/* mobile controls */}
           <div className="lg:hidden flex items-center gap-1.5 ml-auto">
+            {user && (
+              <button onClick={() => navigate('/dashboard?tab=favorit')} className="relative p-2.5 rounded-full hover:bg-gray-100 text-gray-600" title="Favorit">
+                <Icon name="heart" size={20} fill={wishlistIds.size > 0 ? 'currentColor' : 'none'} className={wishlistIds.size > 0 ? 'text-red-500' : ''} />
+                {wishlistIds.size > 0 && (
+                  <span className="absolute top-1 right-1 min-w-[16px] h-4 px-1 rounded-full bg-red-500 text-white text-[9px] font-bold flex items-center justify-center ring-2 ring-white">
+                    {wishlistIds.size > 9 ? '9+' : wishlistIds.size}
+                  </span>
+                )}
+              </button>
+            )}
             <button onClick={toggleMobileSearch} className="p-2.5 rounded-full hover:bg-gray-100 text-gray-600" title="Cari">
               <Icon name="search" size={20} />
             </button>
@@ -266,14 +307,14 @@ export default function Header() {
 
       {/* mobile search */}
       {mobileSearch && (
-        <div className="relative z-10 lg:hidden bg-white border-b px-4 py-3 slide-down scroll-mt-32">
+        <div className="relative z-20 lg:hidden bg-white border-b px-4 py-3 slide-down scroll-mt-32">
           <SearchBar q={q} setQ={setQ} inputRef={mobileInputRef} />
         </div>
       )}
 
       {/* mobile category strip */}
       <div className="relative z-10 lg:hidden bg-white/95 backdrop-blur border-b border-gray-200/70">
-        <div className="flex items-center gap-1.5 overflow-x-auto scrollbar-hide px-3 py-2">
+        <div className="flex items-center gap-1.5 overflow-x-auto no-scrollbar px-3 py-2">
           <button onClick={() => navigate('/explore')} className="flex items-center gap-1 shrink-0 whitespace-nowrap rounded-full px-3 py-1.5 text-xs font-bold text-[#0e76f1] bg-blue-50/80">
             <Icon name="grid" size={13} /> Semua
           </button>
@@ -281,7 +322,8 @@ export default function Header() {
             <button
               key={c.id}
               onClick={() => navigate(`/explore?category=${c.slug}`)}
-              className="shrink-0 whitespace-nowrap rounded-full px-3 py-1.5 text-xs font-medium text-gray-600 hover:text-[#0e76f1] hover:bg-blue-50 transition-colors"
+              aria-current={activeCat === c.slug ? 'page' : undefined}
+              className={catClsMobile(c.slug)}
             >
               <span className="text-[13px]">{c.icon}</span> {c.name}
             </button>
@@ -292,15 +334,16 @@ export default function Header() {
       {/* category bar (desktop) */}
       <div className="hidden lg:block relative z-10 bg-white/95 backdrop-blur border-b border-gray-200/70">
         <div className="max-w-[1240px] mx-auto px-4">
-          <div className="flex items-center gap-1 overflow-x-auto scrollbar-hide py-2">
-            <button onClick={() => scrollTo('gigs') || navigate('/explore')} className="flex items-center gap-1.5 whitespace-nowrap rounded-full px-3.5 py-1.5 text-[13px] font-semibold text-[#0e76f1] bg-blue-50/70 hover:bg-blue-100/70 transition-colors">
+          <div className="flex items-center gap-1 overflow-x-auto no-scrollbar py-2">
+            <button onClick={goToGigs} className="flex items-center gap-1.5 whitespace-nowrap rounded-full px-3.5 py-1.5 text-[13px] font-semibold text-[#0e76f1] bg-blue-50/70 hover:bg-blue-100/70 transition-colors">
               <Icon name="grid" size={14} /> Semua
             </button>
             {cats.map(c => (
               <button
                 key={c.id}
                 onClick={() => navigate(`/explore?category=${c.slug}`)}
-                className="flex items-center gap-1.5 whitespace-nowrap rounded-full px-3.5 py-1.5 text-[13px] font-medium text-gray-600 hover:text-[#0e76f1] hover:bg-blue-50 transition-colors"
+                aria-current={activeCat === c.slug ? 'page' : undefined}
+                className={catCls(c.slug)}
               >
                 <span className="text-[15px]">{c.icon}</span> {c.name}
               </button>
@@ -309,7 +352,7 @@ export default function Header() {
         </div>
       </div>
 
-      <MobileBottomNav user={user} />
+      {pathname !== '/' && <MobileBottomNav user={user} />}
     </header>
   )
 }

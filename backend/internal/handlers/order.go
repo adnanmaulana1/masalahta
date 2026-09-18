@@ -38,6 +38,10 @@ func CreateOrder(c *gin.Context) {
 	}
 	config.DB.Create(&order)
 	config.DB.Preload("Gig").Preload("Package").Preload("Client").Preload("Freelancer").First(&order, order.ID)
+	oid := order.ID
+	gid := order.GigID
+	config.DB.Where("order_id = ?", order.ID).FirstOrCreate(&models.Conversation{ClientID: order.ClientID, FreelancerID: order.FreelancerID, GigID: &gid, OrderID: &oid})
+	Notify(gig.UserID, "order", "Pesanan baru diterima", order.Client.FullName+" memesan "+gig.Title, "/orders")
 	c.JSON(http.StatusCreated, order)
 }
 
@@ -77,6 +81,11 @@ func UpdateOrderStatus(c *gin.Context) {
 	}
 	order.Status = input.Status
 	config.DB.Save(&order)
+	other := order.ClientID
+	if uid.(uint) == order.ClientID {
+		other = order.FreelancerID
+	}
+	Notify(other, "order", "Status pesanan: "+input.Status, "Pesanan #"+c.Param("id")+" berubah menjadi "+input.Status, "/orders")
 	c.JSON(http.StatusOK, order)
 }
 
@@ -92,7 +101,26 @@ func CreateReview(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
+	var order models.Order
+	if err := config.DB.First(&order, input.OrderID).Error; err != nil || order.ClientID != uid.(uint) {
+		c.JSON(http.StatusForbidden, gin.H{"error": "Hanya pembeli order ini yang bisa mengulas"})
+		return
+	}
+	if order.Status != "completed" {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Ulasan hanya untuk order selesai"})
+		return
+	}
 	review := models.Review{GigID: input.GigID, OrderID: input.OrderID, UserID: uid.(uint), Rating: input.Rating, Comment: input.Comment}
+	var exists int64
+	config.DB.Model(&models.Review{}).Where("order_id = ? AND user_id = ?", input.OrderID, uid).Count(&exists)
+	if exists > 0 {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Order ini sudah diulas"})
+		return
+	}
+	if input.Rating < 1 || input.Rating > 5 {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Rating 1–5"})
+		return
+	}
 	config.DB.Create(&review)
 	// update gig rating naive
 	var gig models.Gig
@@ -100,5 +128,13 @@ func CreateReview(c *gin.Context) {
 	newCount := gig.ReviewCount + 1
 	newRating := (gig.Rating*float64(gig.ReviewCount) + float64(input.Rating)) / float64(newCount)
 	config.DB.Model(&gig).Updates(map[string]interface{}{"rating": newRating, "review_count": newCount})
+	Notify(gig.UserID, "review", "Ulasan baru bintang "+string(rune('0'+input.Rating)), input.Comment, "/dashboard?tab=gigs")
 	c.JSON(http.StatusCreated, review)
+}
+
+func MyReviewedOrders(c *gin.Context) {
+	uid, _ := c.Get("user_id")
+	var ids []uint
+	config.DB.Model(&models.Review{}).Where("user_id = ?", uid).Pluck("order_id", &ids)
+	c.JSON(http.StatusOK, gin.H{"data": ids})
 }

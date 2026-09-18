@@ -22,10 +22,10 @@ const columns = [
   {
     title: 'Bantuan',
     links: [
-      { label: 'Keamanan & Escrow', to: '/explore' },
-      { label: 'Syarat & Ketentuan', to: '/explore' },
-      { label: 'Kebijakan Privasi', to: '/explore' },
-      { label: 'Kontak', to: '/explore' },
+      { label: 'Keamanan & Escrow', to: '/security' },
+      { label: 'Syarat & Ketentuan', to: '/terms' },
+      { label: 'Kebijakan Privasi', to: '/privacy' },
+      { label: 'Kontak', to: '/contact' },
     ],
   },
 ]

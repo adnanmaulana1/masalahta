@@ -28,12 +28,44 @@ func ConnectDatabase() {
 		&models.Package{},
 		&models.Order{},
 		&models.Review{},
+		&models.PasswordReset{},
+		&models.Wishlist{},
+		&models.Notification{},
+		&models.ContactMessage{},
+		&models.Message{},
+		&models.Conversation{},
 	)
 	if err != nil {
 		log.Fatal("Failed to migrate:", err)
 	}
 
+	backfillConversations()
+
 	SeedData()
+}
+
+func backfillConversations() {
+	var msgs []models.Message
+	DB.Where("conversation_id = ? AND order_id <> ?", 0, 0).Find(&msgs)
+	byOrder := map[uint][]models.Message{}
+	for _, m := range msgs {
+		byOrder[m.OrderID] = append(byOrder[m.OrderID], m)
+	}
+	for orderID := range byOrder {
+		var order models.Order
+		if err := DB.First(&order, orderID).Error; err != nil {
+			continue
+		}
+		convo := models.Conversation{ClientID: order.ClientID, FreelancerID: order.FreelancerID, GigID: &order.GigID, OrderID: &order.ID}
+		oid := order.ID
+		gid := order.GigID
+		convo.OrderID = &oid
+		convo.GigID = &gid
+		if err := DB.Where("order_id = ?", orderID).FirstOrCreate(&convo).Error; err != nil {
+			continue
+		}
+		DB.Model(&models.Message{}).Where("order_id = ? AND conversation_id = ?", orderID, 0).Update("conversation_id", convo.ID)
+	}
 }
 
 func SeedData() {

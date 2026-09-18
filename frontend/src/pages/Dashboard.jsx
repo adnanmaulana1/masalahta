@@ -1,10 +1,13 @@
 import { useEffect, useRef, useState } from 'react'
+import { createPortal } from 'react-dom'
 import { Link, useSearchParams } from 'react-router-dom'
 import api from '../utils/api'
 import { useAuth } from '../context/AuthContext'
 import { showToast } from '../components/Toast'
 import Icon from '../components/Icon'
 import Avatar from '../components/Avatar'
+import AvatarCropper from '../components/AvatarCropper'
+import GigCard from '../components/GigCard'
 import { formatIDR, orderStatus, parseImages } from '../utils/format'
 
 const ACTIVE = ['pending', 'progress', 'review']
@@ -28,12 +31,14 @@ export default function Dashboard() {
   const [gigs, setGigs] = useState([])
   const [orders, setOrders] = useState([])
   const [trend, setTrend] = useState([])
+  const [favs, setFavs] = useState([])
   const [fIn, setFIn] = useState('all')
   const [fMy, setFMy] = useState('all')
   const [avatar, setAvatar] = useState('')
+  const [cropSrc, setCropSrc] = useState('')
   const [saving, setSaving] = useState(false)
   const [editOpen, setEditOpen] = useState(false)
-  const [editForm, setEditForm] = useState({ username: '', email: '', full_name: '', location: '', bio: '' })
+  const [editForm, setEditForm] = useState({ username: '', email: '', full_name: '', location: '', bio: '', phone: '', skills: '', website: '' })
   const [editSaving, setEditSaving] = useState(false)
   const fileRef = useRef(null)
 
@@ -45,10 +50,17 @@ export default function Dashboard() {
   }, [user])
 
   useEffect(() => {
+    if (!user || tab !== 'favorit') return
+    api.get('/wishlist').then(r => setFavs(r.data.data || [])).catch(() => {})
+  }, [user, tab])
+
+  useEffect(() => {
     if (!editOpen) return
     const overflow = document.body.style.overflow
     document.body.style.overflow = 'hidden'
-    return () => { document.body.style.overflow = overflow }
+    const onKey = (e) => { if (e.key === 'Escape') setEditOpen(false) }
+    document.addEventListener('keydown', onKey)
+    return () => { document.body.style.overflow = overflow; document.removeEventListener('keydown', onKey) }
   }, [editOpen])
 
   if (!user) {
@@ -94,7 +106,8 @@ export default function Dashboard() {
     { v: 'dashboard', l: 'Ringkasan', icon: 'grid' },
     ...(isFL ? [{ v: 'gigs', l: 'Jasa Saya', icon: 'briefcase' }] : []),
     { v: 'orders', l: 'Pesanan', icon: 'box' },
-    { v: 'profile', l: 'Profil', icon: 'user' },
+    ...(!isFL && role !== 'admin' ? [{ v: 'rekomendasi', l: 'Rekomendasi', icon: 'sparkles' }] : []),
+    ...(!isFL && role !== 'admin' ? [{ v: 'favorit', l: 'Favorit', icon: 'heart' }] : []),
   ]
 
   const updateStatus = async (id, status) => {
@@ -103,7 +116,7 @@ export default function Dashboard() {
   }
 
   const openEdit = () => {
-    setEditForm({ username: user.username || '', email: user.email || '', full_name: user.full_name || '', location: user.location || '', bio: user.bio || '' })
+    setEditForm({ username: user.username || '', email: user.email || '', full_name: user.full_name || '', location: user.location || '', bio: user.bio || '', phone: user.phone || '', skills: user.skills || '', website: user.website || '' })
     setEditOpen(true)
   }
 
@@ -116,9 +129,16 @@ export default function Dashboard() {
       full_name: editForm.full_name.trim(),
       location: editForm.location.trim(),
       bio: editForm.bio.trim(),
+      phone: editForm.phone.trim(),
+      skills: editForm.skills.trim(),
+      website: editForm.website.trim(),
     }
     if (!payload.username || !payload.email || !payload.full_name) {
       showToast('Nama, username, dan email wajib diisi', 'error')
+      return
+    }
+    if (isFL && (!payload.bio || !payload.skills)) {
+      showToast('Freelancer wajib mengisi bio dan keahlian', 'error')
       return
     }
     setEditSaving(true)
@@ -136,24 +156,13 @@ export default function Dashboard() {
 
   const onAvatarFile = (e) => {
     const file = e.target.files?.[0]
+    e.target.value = ''
     if (!file) return
+    if (!file.type.startsWith('image/')) { showToast('File harus gambar', 'error'); return }
+    if (file.size > 5 * 1024 * 1024) { showToast('Ukuran maksimal 5MB', 'error'); return }
     const reader = new FileReader()
-    reader.onload = () => {
-      const img = new Image()
-      img.onload = () => {
-        const S = 256
-        const scale = Math.min(1, S / Math.max(img.width, img.height))
-        const canvas = document.createElement('canvas')
-        canvas.width = Math.round(img.width * scale)
-        canvas.height = Math.round(img.height * scale)
-        const ctx = canvas.getContext('2d')
-        if (!ctx) return showToast('Browser tidak mendukung', 'error')
-        ctx.drawImage(img, 0, 0, canvas.width, canvas.height)
-        saveAvatar(canvas.toDataURL('image/jpeg', 0.85))
-      }
-      img.onerror = () => showToast('File gambar tidak valid', 'error')
-      img.src = reader.result
-    }
+    reader.onload = () => setCropSrc(reader.result)
+    reader.onerror = () => showToast('Gagal membaca file', 'error')
     reader.readAsDataURL(file)
   }
 
@@ -202,36 +211,54 @@ export default function Dashboard() {
   return (
     <div className="max-w-[1180px] mx-auto px-4 py-5 sm:py-7">
       {/* profile banner */}
-      <section className="rounded-3xl border border-gray-200/80 bg-white p-5 shadow-sm sm:p-7">
-        <div className="flex flex-col gap-5 sm:flex-row sm:items-center sm:justify-between">
-          <div className="flex min-w-0 items-center gap-4">
-            <Avatar src={user.avatar} username={user.username} size={64} className="shrink-0 ring-1 ring-gray-200" />
-            <div className="min-w-0">
-              <div className="flex flex-wrap items-center gap-2.5">
-                <h1 className="truncate text-xl font-extrabold text-ink sm:text-2xl">{user.full_name}</h1>
+      <section className="rounded-[28px] border border-gray-200/70 bg-white p-5 sm:p-6 shadow-sm overflow-hidden">
+        <div className="flex flex-col items-center text-center sm:flex-row sm:items-start sm:text-left gap-4 sm:gap-5">
+          <div className="relative shrink-0">
+            <div className="rounded-full p-[3px] bg-gradient-to-br from-[#0e76f1] to-[#6a3cff] shadow-lg shadow-blue-500/15">
+              <Avatar src={avatar || user.avatar} username={user.username} size={96} className="ring-[3px] ring-white !w-[88px] !h-[88px] sm:!w-[96px] sm:!h-[96px]" />
+            </div>
+            <input ref={fileRef} type="file" accept="image/*" className="hidden" onChange={onAvatarFile} />
+            <button
+              onClick={() => fileRef.current?.click()}
+              disabled={saving}
+              className="absolute bottom-0.5 -right-0.5 w-8 h-8 rounded-full bg-[#0e76f1] border-[3px] border-white shadow-md flex items-center justify-center text-white hover:bg-[#0b5fd0] active:scale-95 transition-all"
+              title="Ganti foto profil"
+            >
+              <Icon name={saving ? 'clock' : 'edit'} size={14} />
+            </button>
+          </div>
+          <div className="flex-1 min-w-0 w-full">
+            <div className="flex flex-col items-center sm:items-start gap-1.5">
+              <div className="flex flex-wrap items-center justify-center sm:justify-start gap-2">
+                <h1 className="text-[20px] font-extrabold text-ink tracking-tight leading-none sm:text-2xl">{user.full_name}</h1>
                 <span className={`rounded-full px-2.5 py-1 text-[10px] font-bold ring-1 ${rm.cls}`}>{rm.label}</span>
               </div>
-              <div className="mt-1 flex flex-wrap items-center gap-x-3 gap-y-1 text-sm text-gray-500">
-                <span>@{user.username}</span>
-                {user.location && <span className="flex items-center gap-1"><Icon name="mapPin" size={13} /> {user.location}</span>}
-              </div>
-              <p className="mt-2 text-xs text-gray-400">
-                Member sejak {user.created_at ? new Date(user.created_at).toLocaleDateString('id-ID', { month: 'long', year: 'numeric' }) : '—'}
-              </p>
+              <p className="text-[13px] text-gray-400 font-medium">@{user.username}</p>
             </div>
-          </div>
-          <div className="flex items-center gap-2 sm:shrink-0">
-            <button onClick={openEdit} className="btn-outline flex-1 !rounded-xl !px-4 !py-2.5 !text-xs sm:flex-none">
-              Edit Profil
-            </button>
-            <Link to={isFL ? '/create-gig' : '/explore'} className="btn-primary flex-1 !rounded-xl !px-4 !py-2.5 !text-xs sm:flex-none">
-              <Icon name={isFL ? 'plus' : 'search'} size={14} /> {isFL ? 'Buat Jasa' : 'Cari Jasa'}
-            </Link>
+            <div className="mt-3 flex flex-wrap items-center justify-center sm:justify-start gap-2">
+              {user.location && <span className="inline-flex items-center gap-1.5 rounded-full bg-gray-50 border border-gray-100 px-3 py-1.5 text-xs font-medium text-gray-600"><Icon name="mapPin" size={13} className="text-gray-400" /> {user.location}</span>}
+              {user.website && <a href={user.website.startsWith('http') ? user.website : `https://${user.website}`} target="_blank" rel="noreferrer" className="inline-flex items-center gap-1.5 rounded-full bg-blue-50 border border-blue-100 px-3 py-1.5 text-xs font-semibold text-[#0e76f1] hover:bg-blue-100 transition-colors"><Icon name="send" size={12} /> {user.website.replace(/^https?:\/\//, '')}</a>}
+              <span className="inline-flex items-center gap-1.5 rounded-full bg-gray-50 border border-gray-100 px-3 py-1.5 text-xs font-medium text-gray-600"><Icon name="calendar" size={13} className="text-gray-400" /> Sejak {user.created_at ? new Date(user.created_at).toLocaleDateString('id-ID', { month: 'long', year: 'numeric' }) : '—'}</span>
+            </div>
+            {user.bio && <p className="mt-3 text-[13px] leading-relaxed text-gray-600 line-clamp-3 max-w-xl mx-auto sm:mx-0">{user.bio}</p>}
+            {user.skills && (
+              <div className="mt-3 flex flex-wrap justify-center sm:justify-start gap-1.5">
+                {user.skills.split(',').map(s => s.trim()).filter(Boolean).slice(0, 6).map(s => (
+                  <span key={s} className="text-[11px] font-bold bg-[#f0f6ff] text-[#0e76f1] border border-blue-100 rounded-full px-3 py-1">{s}</span>
+                ))}
+              </div>
+            )}
+            <div className="mt-4 flex gap-2 w-full sm:w-auto">
+              <button onClick={openEdit} className="btn-outline flex-1 sm:flex-none !rounded-xl !px-5 !py-3 !text-[13px] font-bold">Edit Profil</button>
+              <Link to={isFL ? '/create-gig' : '/explore'} className="btn-primary flex-1 sm:flex-none !rounded-xl !px-5 !py-3 !text-[13px] font-bold justify-center">
+                <Icon name={isFL ? 'plus' : 'search'} size={14} /> {isFL ? 'Buat Jasa' : 'Cari Jasa'}
+              </Link>
+            </div>
           </div>
         </div>
       </section>
 
-      {/* stats */}
+      {/* stats — selalu tampil */}
       <div className="grid grid-cols-2 gap-3 mt-4 md:grid-cols-4">
         {stats.map((s, i) => (
           <div key={s.label} className="group relative min-w-0 overflow-hidden rounded-2xl border border-gray-200/70 bg-white p-4 shadow-sm transition-all hover:-translate-y-1 hover:shadow-lg fade-up sm:p-5" style={{ animationDelay: `${i * 60}ms` }}>
@@ -252,7 +279,7 @@ export default function Dashboard() {
       </div>
 
       {/* tabs */}
-      <div className="mt-6 -mx-4 px-4 lg:mx-0 lg:px-0 overflow-x-auto scrollbar-hide">
+      <div className="mt-6 -mx-4 px-4 lg:mx-0 lg:px-0 overflow-x-auto no-scrollbar">
         <div className="flex w-fit min-w-full items-center gap-1 rounded-2xl border border-gray-200/70 bg-white p-1.5 shadow-sm sm:min-w-0">
           {tabs.map(t => (
             <button key={t.v} onClick={() => setParams({ tab: t.v })}
@@ -265,13 +292,10 @@ export default function Dashboard() {
 
       {/* TAB: dashboard ringkasan */}
       {tab === 'dashboard' && (
-        <div className="grid lg:grid-cols-[1.1fr_.9fr] gap-4 mt-5">
+        <div className={`gap-4 mt-5 ${(isFL || role === 'admin') ? 'grid lg:grid-cols-[1.1fr_.9fr]' : ''}`}>
           <div className="rounded-2xl border border-gray-200/70 bg-white p-5 shadow-sm sm:p-6">
             <div className="flex items-center justify-between mb-4">
-              <div>
-                <p className="text-[10px] font-extrabold uppercase tracking-[.14em] text-[#0e76f1]">Aktivitas</p>
-                <h3 className="mt-1 font-extrabold text-ink">Pesanan Terbaru</h3>
-              </div>
+              <h3 className="font-extrabold text-ink flex items-center gap-2"><span className="w-9 h-9 rounded-xl bg-blue-50 text-[#0e76f1] flex items-center justify-center"><Icon name="box" size={17} /></span> Pesanan Terbaru</h3>
               <Link to="/orders" className="inline-flex items-center gap-1 rounded-full bg-blue-50 px-3 py-1.5 text-[11px] font-bold text-[#0e76f1] hover:bg-blue-100">Lihat semua <Icon name="arrowRight" size={12} /></Link>
             </div>
             {renderSummaryList(isFL ? incomingOrders.concat(myOrders) : myOrders)}
@@ -319,44 +343,61 @@ export default function Dashboard() {
                 {orders.length === 0 && <EmptyState icon="box" txt="Belum ada data pesanan" />}
               </div>
             </div>
-          ) : (
-            <div className="rounded-2xl border border-gray-200/70 bg-white p-5 shadow-sm sm:p-6">
-              <div className="flex items-center justify-between mb-4">
-                <h3 className="font-extrabold text-ink flex items-center gap-2"><Icon name="sparkles" size={17} className="text-[#6a3cff]" /> Jasa Rekomendasi</h3>
-                <Link to="/explore" className="text-xs font-bold text-[#0e76f1] hover:underline">Lihat semua</Link>
-              </div>
-              {trend.length === 0 ? <EmptyState icon="sparkles" txt="Belum ada jasa tersedia" /> : (
-                <div className="grid sm:grid-cols-2 gap-3">
-                  {trend.slice(0, 6).map(g => (
-                    <Link key={g.id} to={`/gig/${g.slug}`} className="flex items-center gap-3 p-3 rounded-xl border hover:border-blue-200 hover:bg-blue-50/40 transition-colors">
-                      <div className="w-16 h-12 rounded-lg overflow-hidden shrink-0 bg-gray-100"><img src={parseImages(g.images)[0]} alt="" className="w-full h-full object-cover" loading="lazy" onError={e => e.target.style.display = 'none'} /></div>
-                      <div className="flex-1 min-w-0">
-                        <div className="text-sm font-semibold text-ink line-clamp-1">{g.title}</div>
-                        <div className="text-[11px] text-gray-400 flex items-center gap-1.5 mt-0.5">
-                          <span className="text-amber-500 flex items-center gap-0.5"><Icon name="starFill" size={11} /></span>
-                          <b className="text-gray-500">{Number(g.rating || 0).toFixed(1)}</b>
-                          <span>•</span>
-                          <span className="truncate">{g.category?.name || 'Jasa'}</span>
-                        </div>
-                      </div>
-                      <span className="text-sm font-extrabold text-[#0e76f1] shrink-0">{formatIDR(g.packages?.[0]?.price)}</span>
-                    </Link>
-                  ))}
-                </div>
-              )}
+          ) : null}
+        </div>
+      )}
+
+      {/* TAB: rekomendasi (khusus client) */}
+      {tab === 'rekomendasi' && !isFL && role !== 'admin' && (
+        <section className="rounded-2xl border border-gray-200/70 bg-white p-5 shadow-sm sm:p-6 mt-4">
+          <div className="flex items-center justify-between mb-4">
+            <h3 className="font-extrabold text-ink flex items-center gap-2"><span className="w-9 h-9 rounded-xl bg-violet-50 text-[#6a3cff] flex items-center justify-center"><Icon name="sparkles" size={17} /></span> Jasa Rekomendasi</h3>
+            <Link to="/explore" className="text-xs font-bold text-[#0e76f1] hover:underline">Lihat semua</Link>
+          </div>
+          {trend.length === 0 ? <EmptyState icon="sparkles" txt="Belum ada jasa tersedia" /> : (
+            <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
+              {trend.slice(0, 6).map((g, i) => (
+                <Link key={g.id} to={`/gig/${g.slug}`} className="group relative rounded-2xl border border-gray-200/70 overflow-hidden bg-white hover:border-blue-200 hover:shadow-[0_16px_40px_-16px_rgba(14,118,241,0.35)] hover:-translate-y-1 transition-all duration-300">
+                  <div className="relative aspect-[16/9] overflow-hidden bg-gray-100">
+                    <img src={parseImages(g.images)[0]} alt="" className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" loading="lazy" onError={e => e.target.style.display = 'none'} />
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/45 via-transparent to-transparent"></div>
+                    <span className="absolute top-2.5 left-2.5 rounded-full bg-white/95 backdrop-blur px-2.5 py-1 text-[11px] font-bold text-gray-700">#{i + 1} {g.category?.name || 'Jasa'}</span>
+                    <span className="absolute bottom-2.5 left-2.5 inline-flex items-center gap-1 rounded-full bg-black/45 backdrop-blur px-2.5 py-1 text-[11px] font-bold text-white"><Icon name="starFill" size={11} className="text-amber-400" /> {Number(g.rating || 0).toFixed(1)}</span>
+                  </div>
+                  <div className="p-4">
+                    <div className="text-sm font-bold text-ink line-clamp-2 leading-snug min-h-[40px] group-hover:text-[#0e76f1] transition-colors">{g.title}</div>
+                    <div className="mt-3 pt-3 border-t flex items-center justify-between">
+                      <span className="text-[11px] text-gray-400 font-medium">Mulai dari</span>
+                      <span className="text-[15px] font-extrabold text-[#0e76f1]">{formatIDR(g.packages?.[0]?.price)}</span>
+                    </div>
+                  </div>
+                </Link>
+              ))}
             </div>
           )}
-        </div>
+        </section>
+      )}
+
+      {/* TAB: favorit (khusus client) */}
+      {tab === 'favorit' && !isFL && role !== 'admin' && (
+        <section className="rounded-2xl border border-gray-200/70 bg-white p-5 shadow-sm sm:p-6 mt-4">
+          <div className="flex items-center justify-between mb-4">
+            <h3 className="font-extrabold text-ink flex items-center gap-2"><span className="w-9 h-9 rounded-xl bg-red-50 text-red-500 flex items-center justify-center"><Icon name="heart" size={17} /></span> Jasa Favorit <span className="text-xs font-bold text-gray-400">({favs.length})</span></h3>
+            <Link to="/explore" className="text-xs font-bold text-[#0e76f1] hover:underline">Cari jasa</Link>
+          </div>
+          {favs.length === 0 ? <EmptyState icon="heart" txt="Belum ada favorit. Ketuk ikon hati di jasa yang kamu suka." /> : (
+            <div className="grid grid-cols-2 lg:grid-cols-3 gap-4">
+              {favs.map((g, i) => <GigCard key={g.id} gig={g} index={i} />)}
+            </div>
+          )}
+        </section>
       )}
 
       {/* TAB: gigs */}
       {tab === 'gigs' && isFL && (
-        <div className="card mt-5 overflow-hidden">
-          <div className="p-5 border-b flex items-center justify-between">
-            <div>
-              <h3 className="font-extrabold text-ink">Jasa Saya ({gigs.length})</h3>
-              <p className="text-xs text-gray-400 mt-0.5">Kelola jasa yang kamu pasang di marketplace</p>
-            </div>
+        <div className="rounded-2xl border border-gray-200/70 bg-white shadow-sm mt-5 overflow-hidden">
+          <div className="p-5 sm:p-6 border-b border-gray-100 flex items-center justify-between gap-3">
+            <h3 className="font-extrabold text-ink flex items-center gap-2"><span className="w-9 h-9 rounded-xl bg-violet-50 text-[#6a3cff] flex items-center justify-center"><Icon name="briefcase" size={17} /></span> Jasa Saya <span className="text-xs font-bold text-gray-400">({gigs.length})</span></h3>
             <Link to="/create-gig" className="btn-primary !py-2.5 !px-4 !text-sm"><Icon name="plus" size={15} strokeWidth={3} /> Jasa Baru</Link>
           </div>
           {gigs.length === 0 ? (
@@ -395,7 +436,7 @@ export default function Dashboard() {
       {tab === 'dashboard' && orders.length > 0 && (
         <div className="mt-4 rounded-2xl border border-gray-200/70 bg-white p-5 shadow-sm sm:p-6">
           <div className="flex items-center justify-between mb-4">
-            <h3 className="font-extrabold text-ink flex items-center gap-2"><Icon name="clock" size={17} className="text-[#0e76f1]" /> Aktivitas Terbaru</h3>
+            <h3 className="font-extrabold text-ink flex items-center gap-2"><span className="w-9 h-9 rounded-xl bg-blue-50 text-[#0e76f1] flex items-center justify-center"><Icon name="clock" size={17} /></span> Aktivitas Terbaru</h3>
             <Link to="/dashboard?tab=orders" className="text-xs font-bold text-[#0e76f1] hover:underline">Semua pesanan</Link>
           </div>
           <div className="space-y-0">
@@ -429,18 +470,18 @@ export default function Dashboard() {
       {tab === 'orders' && (
         <div className="mt-5 space-y-5">
           {isFL && (
-            <div className="card p-5">
+            <div className="rounded-2xl border border-gray-200/70 bg-white p-5 shadow-sm sm:p-6">
               <div className="flex items-center justify-between mb-4">
-                <h3 className="font-extrabold text-ink flex items-center gap-2"><Icon name="trend" size={18} className="text-emerald-500" /> Pesanan Masuk <span className="text-xs font-bold text-gray-400">({incomingOrders.length})</span></h3>
+                <h3 className="font-extrabold text-ink flex items-center gap-2"><span className="w-9 h-9 rounded-xl bg-emerald-50 text-emerald-500 flex items-center justify-center"><Icon name="trend" size={17} /></span> Pesanan Masuk <span className="text-xs font-bold text-gray-400">({incomingOrders.length})</span></h3>
                 <span className="text-[11px] font-bold text-emerald-600 bg-emerald-50 rounded-full px-3 py-1">{formatIDR(income)} terkumpul</span>
               </div>
               <StatusFilter list={incomingOrders} value={fIn} onChange={setFIn} />
               <OrderList orders={incomingOrders.filter(o => fIn === 'all' || o.status === fIn)} canAct onStatus={updateStatus} />
             </div>
           )}
-          <div className="card p-5">
+          <div className="rounded-2xl border border-gray-200/70 bg-white p-5 shadow-sm sm:p-6">
             <div className="flex items-center justify-between mb-4">
-              <h3 className="font-extrabold text-ink flex items-center gap-2"><Icon name="box" size={18} className="text-[#0e76f1]" /> {isFL ? 'Pesanan Saya (dipesan)' : 'Pesanan Saya'} <span className="text-xs font-bold text-gray-400">({myOrders.length})</span></h3>
+              <h3 className="font-extrabold text-ink flex items-center gap-2"><span className="w-9 h-9 rounded-xl bg-blue-50 text-[#0e76f1] flex items-center justify-center"><Icon name="box" size={17} /></span> {isFL ? 'Pesanan Saya (dipesan)' : 'Pesanan Saya'} <span className="text-xs font-bold text-gray-400">({myOrders.length})</span></h3>
               <span className="text-[11px] font-bold text-violet-600 bg-violet-50 rounded-full px-3 py-1">{compactRp(spent)} total</span>
             </div>
             <StatusFilter list={myOrders} value={fMy} onChange={setFMy} />
@@ -449,129 +490,21 @@ export default function Dashboard() {
         </div>
       )}
 
-      {/* TAB: profile */}
-      {tab === 'profile' && (
-        <div className="mt-5 max-w-3xl space-y-5">
-          <div className="card overflow-hidden">
-            <div className="p-6 sm:p-8">
-              <div className="flex flex-wrap items-center gap-5">
-                <div className="relative shrink-0">
-                  <Avatar src={avatar || user.avatar} username={user.username} size={88} className="ring-4 ring-blue-100 shadow-md" />
-                  <input ref={fileRef} type="file" accept="image/*" className="hidden" onChange={onAvatarFile} />
-                  <button
-                    onClick={() => fileRef.current?.click()}
-                    disabled={saving}
-                    className="absolute -bottom-1 -right-1 w-9 h-9 rounded-full bg-white border border-gray-200 shadow-md flex items-center justify-center text-gray-600 hover:text-[#0e76f1] hover:border-blue-200 transition-colors"
-                    title="Ganti foto profil"
-                  >
-                    <Icon name={saving ? 'clock' : 'edit'} size={15} />
-                  </button>
-                </div>
-                <div className="flex-1 min-w-[200px]">
-                  <div className="flex flex-wrap items-center gap-2">
-                    <h3 className="text-xl sm:text-2xl font-extrabold text-ink flex items-center gap-1.5">
-                      {user.full_name}
-                      <Icon name="verified" size={18} className="text-[#0e76f1]" />
-                    </h3>
-                    <span className={`text-[10px] font-bold uppercase tracking-wide px-2.5 py-1 rounded-full ring-1 ${rm.cls}`}>{rm.label}</span>
-                  </div>
-                  <div className="text-sm text-gray-500 mt-0.5">@{user.username} • {user.email}</div>
-                  <button
-                    onClick={() => fileRef.current?.click()}
-                    disabled={saving}
-                    className="mt-3 inline-flex items-center gap-1.5 text-xs font-bold text-[#0e76f1] bg-blue-50 border border-blue-100 hover:bg-blue-100 rounded-full px-3 py-1.5 transition-colors"
-                  >
-                    <Icon name={saving ? 'clock' : 'edit'} size={13} /> {saving ? 'Menyimpan...' : 'Ganti Foto'}
-                  </button>
-                  <button
-                    onClick={openEdit}
-                    className="mt-3 inline-flex items-center gap-1.5 text-xs font-bold text-gray-600 bg-gray-50 border border-gray-200 hover:bg-gray-100 rounded-full px-3 py-1.5 transition-colors"
-                  >
-                    <Icon name="edit" size={13} /> Edit Profil
-                  </button>
-                </div>
-              </div>
-
-              <div className="grid grid-cols-1 sm:grid-cols-3 divide-y sm:divide-y-0 sm:divide-x divide-gray-100 mt-6 pt-5 border-t border-gray-100">
-                <div className="flex items-center gap-3 py-3 sm:py-0 sm:px-4 sm:first:pl-0">
-                  <span className="w-10 h-10 rounded-xl bg-amber-50 text-amber-500 flex items-center justify-center shrink-0"><Icon name="starFill" size={18} fill="currentColor" strokeWidth={0} /></span>
-                  <div><div className="text-lg font-extrabold text-ink leading-none">{Number(user.rating || 0).toFixed(1)}</div>
-                    <div className="text-[11px] text-gray-400 mt-1">Rating</div></div>
-                </div>
-                <div className="flex items-center gap-3 py-3 sm:py-0 sm:px-4">
-                  <span className="w-10 h-10 rounded-xl bg-emerald-50 text-emerald-500 flex items-center justify-center shrink-0"><Icon name="verified" size={18} /></span>
-                  <div><div className="text-lg font-extrabold text-ink leading-none">{user.completed_jobs || 0}</div>
-                    <div className="text-[11px] text-gray-400 mt-1">Project Selesai</div></div>
-                </div>
-                <div className="flex items-center gap-3 py-3 sm:py-0 sm:px-4 sm:pr-0">
-                  <span className="w-10 h-10 rounded-xl bg-blue-50 text-[#0e76f1] flex items-center justify-center shrink-0"><Icon name="calendar" size={18} /></span>
-                  <div><div className="text-lg font-extrabold text-ink leading-none">{user.created_at ? new Date(user.created_at).getFullYear() : '—'}</div>
-                    <div className="text-[11px] text-gray-400 mt-1">Member Sejak</div></div>
-                </div>
-              </div>
-
-              <div className="flex flex-wrap items-center gap-x-5 gap-y-2 mt-5 text-[12.5px] text-gray-500">
-                <span className="flex items-center gap-1.5"><Icon name="mapPin" size={14} className="text-[#0e76f1]" /> {user.location || 'Indonesia'}</span>
-                <span className="w-1 h-1 rounded-full bg-gray-300"></span>
-                <span className="flex items-center gap-1.5 text-emerald-600 font-semibold"><Icon name="shield" size={14} /> Akun Terverifikasi</span>
-              </div>
-
-              <div className="mt-5 pt-5 border-t border-gray-100">
-                <h4 className="font-extrabold text-ink flex items-center gap-2 mb-2">
-                  <span className="w-8 h-8 rounded-lg bg-blue-50 text-[#0e76f1] flex items-center justify-center"><Icon name="user" size={15} /></span>
-                  Tentang Saya
-                </h4>
-                <p className="text-sm text-gray-600 leading-relaxed">{user.bio || 'Belum ada bio. Klik Edit Profil untuk menambahkan cerita singkat tentangmu.'}</p>
-              </div>
-            </div>
-          </div>
-
-          <div className="grid md:grid-cols-2 gap-5">
-            <div className="card p-6">
-              <h4 className="font-extrabold text-ink flex items-center gap-2 mb-4">
-                <span className="w-9 h-9 rounded-xl bg-blue-50 text-[#0e76f1] flex items-center justify-center"><Icon name="user" size={17} /></span>
-                Informasi Lain
-              </h4>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                <InfoTile label="Nama Lengkap" value={user.full_name} icon="user" />
-                <InfoTile label="Username" value={`@${user.username}`} icon="at-sign" />
-                <InfoTile label="Email" value={user.email} icon="mail" />
-                <InfoTile label="Lokasi" value={user.location || 'Indonesia'} icon="mapPin" />
-                <InfoTile label="Role" value={user.role} icon="shield" chip />
-                <InfoTile label="Member Sejak" value={user.created_at ? new Date(user.created_at).toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' }) : '—'} icon="calendar" />
-              </div>
-            </div>
-            <div className="card p-6 h-fit">
-              <h4 className="font-extrabold text-ink flex items-center gap-2 mb-4">
-                <span className="w-9 h-9 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center"><Icon name="trend" size={17} /></span>
-                Ringkasan Aktivitas
-              </h4>
-              <div className="grid grid-cols-2 gap-3">
-                <MiniStat icon="box" label="Total Pesanan" value={orders.length} c="bg-blue-50 text-blue-600" />
-                {isFL ? (
-                  <>
-                    <MiniStat icon="wallet" label="Pendapatan" value={compactRp(income)} c="bg-emerald-50 text-emerald-600" />
-                    <MiniStat icon="starFill" label="Rating" value={Number(user.rating || 0).toFixed(1)} c="bg-amber-50 text-amber-500" fill />
-                  </>
-                ) : (
-                  <>
-                    <MiniStat icon="wallet" label="Total Belanja" value={compactRp(spent)} c="bg-violet-50 text-violet-600" />
-                    <MiniStat icon="verified" label="Project Selesai" value={myCompleted.length} c="bg-emerald-50 text-emerald-600" />
-                  </>
-                )}
-                <MiniStat icon="briefcase" label="Jasa Aktif" value={gigs.length} c="bg-sky-50 text-sky-600" />
-              </div>
-            </div>
-          </div>
-        </div>
+      {/* crop foto profil */}
+      {cropSrc && (
+        <AvatarCropper
+          src={cropSrc}
+          onCancel={() => setCropSrc('')}
+          onCrop={(url) => { setCropSrc(''); saveAvatar(url) }}
+        />
       )}
 
-      {/* edit profile modal */}
-      {editOpen && (
-        <div className="fixed inset-0 z-[90] overflow-y-auto overscroll-contain">
-          <div className="absolute inset-0 bg-black/40 slide-in-left-face" onClick={() => setEditOpen(false)}></div>
-          <div className="relative flex min-h-full items-start justify-center pt-12 sm:items-center sm:p-4">
-          <form onSubmit={saveEdit} className="relative w-full rounded-t-3xl bg-white p-5 pb-[max(24px,env(safe-area-inset-bottom))] shadow-2xl slide-down sm:max-h-[calc(100dvh-32px)] sm:max-w-md sm:overflow-y-auto sm:rounded-3xl sm:p-6">
+      {/* edit profile modal — portal ke body agar tidak ketindih header/stacking context */}      {editOpen && createPortal(
+        <div className="fixed inset-0 flex items-end justify-center sm:items-center sm:p-4 overflow-y-auto overscroll-contain" style={{ zIndex: 90 }}>
+          <div className="fixed inset-0 bg-black/40 slide-in-left-face" onClick={() => setEditOpen(false)}></div>
+          <div className="relative flex min-h-full w-full items-end justify-center sm:items-center sm:p-0 pointer-events-none">
+          <form onSubmit={saveEdit} onClick={e => e.stopPropagation()} className="pointer-events-auto relative w-full max-h-[92dvh] overflow-y-auto overscroll-contain rounded-t-3xl bg-white p-5 pb-[max(24px,env(safe-area-inset-bottom))] shadow-2xl slide-up sm:max-h-[calc(100dvh-32px)] sm:max-w-[640px] sm:rounded-3xl sm:p-6">
+            <div className="w-10 h-1 rounded-full bg-gray-200 mx-auto mb-4 sm:hidden" aria-hidden="true"></div>
             <div className="flex items-center justify-between mb-5">
               <h3 className="font-extrabold text-ink flex items-center gap-2"><Icon name="edit" size={18} className="text-[#0e76f1]" /> Edit Profil</h3>
               <button type="button" onClick={() => setEditOpen(false)} className="p-2 rounded-full hover:bg-gray-100 text-gray-500"><Icon name="x" size={18} /></button>
@@ -603,9 +536,30 @@ export default function Dashboard() {
                 <input value={editForm.location} onChange={e => setEditForm({ ...editForm, location: e.target.value })} placeholder="Contoh: Jakarta, Surabaya" className="input-field" />
               </div>
               <div>
-                <label className="text-xs font-bold text-gray-700 uppercase tracking-wide mb-1.5 block">Bio</label>
+                <label className="text-xs font-bold text-gray-700 uppercase tracking-wide mb-1.5 block">Bio {isFL && <span className="text-red-500">*</span>}{!isFL && <span className="text-gray-400 font-medium normal-case"> (opsional)</span>}</label>
                 <textarea value={editForm.bio} onChange={e => setEditForm({ ...editForm, bio: e.target.value })} placeholder="Ceritakan singkat tentang kamu / keahlianmu" className="input-field h-24 resize-none" maxLength={300} />
                 <p className="text-[11px] text-gray-400 mt-1 text-right">{editForm.bio.length}/300</p>
+              </div>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div>
+                  <label className="text-xs font-bold text-gray-700 uppercase tracking-wide mb-1.5 block">No. HP / WhatsApp <span className="text-gray-400 font-medium normal-case">(opsional)</span></label>
+                  <input value={editForm.phone} onChange={e => setEditForm({ ...editForm, phone: e.target.value })} placeholder="Contoh: 0812xxxxxxx" className="input-field" autoComplete="tel" />
+                </div>
+                <div>
+                  <label className="text-xs font-bold text-gray-700 uppercase tracking-wide mb-1.5 block">Website / Portofolio <span className="text-gray-400 font-medium normal-case">(opsional)</span></label>
+                  <input value={editForm.website} onChange={e => setEditForm({ ...editForm, website: e.target.value })} placeholder="https://" className="input-field" autoComplete="url" />
+                </div>
+              </div>
+              <div>
+                <label className="text-xs font-bold text-gray-700 uppercase tracking-wide mb-1.5 block">Keahlian {isFL ? <span className="text-red-500">*</span> : <span className="text-gray-400 font-medium normal-case">(opsional, pisahkan dengan koma)</span>}{isFL && <span className="text-gray-400 font-medium normal-case"> (pisahkan dengan koma)</span>}</label>
+                <input value={editForm.skills} onChange={e => setEditForm({ ...editForm, skills: e.target.value })} placeholder="Contoh: Desain Logo, Copywriting, SEO" className="input-field" />
+                {editForm.skills.trim() && (
+                  <div className="flex flex-wrap gap-1.5 mt-2">
+                    {editForm.skills.split(',').map(s => s.trim()).filter(Boolean).map(s => (
+                      <span key={s} className="text-[11px] font-bold bg-blue-50 text-[#0e76f1] rounded-full px-2.5 py-1">{s}</span>
+                    ))}
+                  </div>
+                )}
               </div>
             </div>
             <button className="mt-5 w-full btn-primary !py-3" disabled={editSaving}>
@@ -613,8 +567,7 @@ export default function Dashboard() {
             </button>
           </form>
           </div>
-        </div>
-      )}
+        </div>, document.body)}
     </div>
   )
 }
@@ -628,20 +581,6 @@ function InfoTile({ label, value, icon, chip, c = 'bg-blue-50 text-[#0e76f1]' })
         {chip
           ? <span className="text-sm font-bold text-gray-700 bg-gray-100 rounded-md px-2 py-0.5 uppercase inline-block">{value}</span>
           : <div className="text-sm font-semibold text-ink truncate">{value}</div>}
-      </div>
-    </div>
-  )
-}
-
-function MiniStat({ icon, label, value, fill, c = 'bg-blue-50 text-blue-600' }) {
-  return (
-    <div className="flex items-center gap-3 p-3 rounded-xl border border-gray-100">
-      <div className={`w-10 h-10 rounded-xl ${c} flex items-center justify-center shrink-0`}>
-        <Icon name={icon} size={18} fill={fill ? '#0e76f1' : 'none'} strokeWidth={fill ? 0 : 2} />
-      </div>
-      <div className="min-w-0">
-        <div className="text-[10px] font-bold text-gray-400 uppercase tracking-wide">{label}</div>
-        <div className="text-base font-extrabold text-ink leading-tight">{value}</div>
       </div>
     </div>
   )
@@ -661,7 +600,7 @@ function StatusFilter({ list, value, onChange }) {
   list.forEach(o => { counts[o.status] = (counts[o.status] || 0) + 1 })
   const opts = [['all', 'Semua'], ...Object.keys(orderStatus).map(k => [k, orderStatus[k].label])]
   return (
-    <div className="flex gap-1.5 overflow-x-auto scrollbar-hide -mx-5 px-5 mb-4 pb-0.5">
+    <div className="flex gap-1.5 overflow-x-auto no-scrollbar -mx-5 px-5 mb-4 pb-0.5">
       {opts.map(([k, l]) => counts[k] > 0 && (
         <button key={k} onClick={() => onChange(k)}
                 className={`tag shrink-0 !text-[11px] !py-1 transition-colors ${value === k ? '!bg-[#0e76f1] !text-white !border-[#0e76f1]' : 'hover:!bg-gray-50'}`}>

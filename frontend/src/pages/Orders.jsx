@@ -6,6 +6,46 @@ import Icon from '../components/Icon'
 import Avatar from '../components/Avatar'
 import { formatIDR, orderStatus, parseImages } from '../utils/format'
 import { showToast } from '../components/Toast'
+import ChatBox from '../components/ChatBox'
+import Stars from '../components/Stars'
+
+function ReviewForm({ order, onDone }) {
+  const [rating, setRating] = useState(5)
+  const [hover, setHover] = useState(0)
+  const [comment, setComment] = useState('')
+  const [saving, setSaving] = useState(false)
+
+  const submit = async (e) => {
+    e.preventDefault()
+    setSaving(true)
+    try {
+      await api.post('/reviews', { gig_id: order.gig_id, order_id: order.id, rating, comment })
+      showToast('Terima kasih atas ulasanmu!')
+      onDone(order.id)
+    } catch (e2) {
+      showToast(e2.response?.data?.error || 'Gagal mengirim ulasan', 'error')
+    }
+    setSaving(false)
+  }
+
+  return (
+    <form onSubmit={submit} className="mt-3 rounded-xl bg-amber-50/60 border border-amber-100 p-4">
+      <p className="text-xs font-extrabold text-ink">Beri ulasan untuk freelancer ini</p>
+      <div className="flex items-center gap-1 mt-2">
+        {[1, 2, 3, 4, 5].map(v => (
+          <button key={v} type="button" onClick={() => setRating(v)} onMouseEnter={() => setHover(v)} onMouseLeave={() => setHover(0)} aria-label={`${v} bintang`} className="p-0.5 hover:scale-125 active:scale-95 transition-transform">
+            <Icon name="starFill" size={26} className={(hover || rating) >= v ? 'text-amber-400' : 'text-gray-300'} fill="currentColor" strokeWidth={0} />
+          </button>
+        ))}
+        <span className="text-xs font-bold text-gray-500 ml-1.5">{['', 'Buruk', 'Kurang', 'Cukup', 'Bagus', 'Luar biasa'][hover || rating]}</span>
+      </div>
+      <textarea value={comment} onChange={e => setComment(e.target.value)} placeholder="Ceritakan pengalamanmu..." rows={2} className="input-field mt-3 !py-2.5" />
+      <button disabled={saving} className="btn-primary !py-2 !px-4 !text-xs mt-2.5">
+        {saving ? <span className="inline-block w-3.5 h-3.5 border-2 border-white/40 border-t-white rounded-full animate-spin"></span> : 'Kirim Ulasan'}
+      </button>
+    </form>
+  )
+}
 
 const FLOW = ['pending', 'progress', 'review', 'completed']
 
@@ -45,10 +85,14 @@ export default function Orders() {
   const [type, setType] = useState('mine')
   const [filter, setFilter] = useState('all')
   const [loading, setLoading] = useState(true)
+  const [chatOpen, setChatOpen] = useState({})
+  const [reviewed, setReviewed] = useState([])
+  const [reviewOpen, setReviewOpen] = useState({})
 
   const fetchOrders = () => {
     setLoading(true)
     api.get('/orders').then(r => setOrders(r.data.data || [])).catch(() => {}).finally(() => setLoading(false))
+    api.get('/reviews/mine').then(r => setReviewed(r.data.data || [])).catch(() => {})
   }
   useEffect(() => { fetchOrders() }, [])
 
@@ -134,6 +178,9 @@ export default function Orders() {
 
               {o.status !== 'cancelled' && (
                 <div className="flex flex-wrap gap-2 mt-4 border-t pt-4">
+                  <button onClick={() => setChatOpen(p => ({ ...p, [o.id]: !p[o.id] }))} className={`rounded-xl px-4 py-2 text-xs font-bold transition-colors flex items-center gap-1.5 ${chatOpen[o.id] ? 'bg-blue-50 text-[#0e76f1]' : 'border border-gray-200 text-gray-600 hover:border-[#0e76f1] hover:text-[#0e76f1]'}`}>
+                    <Icon name="chat" size={14} /> {chatOpen[o.id] ? 'Tutup Chat' : 'Chat'}
+                  </button>
                   {o.status === 'pending' && !isFreelancerView && <span className="text-[11px] font-semibold text-amber-600 bg-amber-50 rounded-lg px-3 py-2">Menunggu freelancer menerima pesanan</span>}
                   {o.status === 'pending' && isFreelancerView && <button onClick={() => updateStatus(o.id, 'progress')} className="btn-primary !py-2 !px-4 !text-xs"><Icon name="check" size={14} strokeWidth={3} /> Terima & Kerjakan</button>}
                   {o.status === 'progress' && isFreelancerView && <button onClick={() => updateStatus(o.id, 'review')} className="bg-amber-500 hover:bg-amber-600 text-white rounded-xl px-4 py-2 text-xs font-bold transition-colors"><Icon name="send" size={13} /> Kirim untuk Review</button>}
@@ -144,10 +191,41 @@ export default function Orders() {
               )}
 
               {o.status === 'completed' && (
-                <div className="mt-4 border-t pt-4 flex items-center gap-2 text-xs font-semibold text-emerald-600">
-                  <Icon name="verified" size={15} /> Pesanan selesai. Beri rating untuk freelancer ini.
+                <div className="mt-4 border-t pt-4">
+                  {!isFreelancerView && !reviewed.includes(o.id) && (
+                    reviewOpen[o.id] ? (
+                      <ReviewForm order={o} onDone={(id) => { setReviewed(prev => [...prev, id]); setReviewOpen(p => ({ ...p, [id]: false })) }} />
+                    ) : (
+                      <button onClick={() => setReviewOpen(p => ({ ...p, [o.id]: true }))} className="flex items-center gap-2 text-xs font-bold text-amber-600 bg-amber-50 border border-amber-100 rounded-xl px-4 py-2.5 hover:bg-amber-100 transition-colors">
+                        <Stars rating={0} size={14} /> Beri rating untuk freelancer ini
+                      </button>
+                    )
+                  )}
+                  {!isFreelancerView && reviewed.includes(o.id) && (
+                    <div className="flex items-center gap-2 text-xs font-semibold text-emerald-600">
+                      <Icon name="verified" size={15} /> Pesanan selesai. Terima kasih atas ulasanmu!
+                    </div>
+                  )}
+                  {isFreelancerView && (
+                    <div className="flex items-center gap-2 text-xs font-semibold text-emerald-600">
+                      <Icon name="verified" size={15} /> Pesanan selesai dengan baik.
+                    </div>
+                  )}
+                  <button onClick={() => setChatOpen(p => ({ ...p, [o.id]: !p[o.id] }))} className="mt-2 text-xs font-bold text-gray-500 hover:text-[#0e76f1] flex items-center gap-1.5">
+                    <Icon name="chat" size={14} /> {chatOpen[o.id] ? 'Tutup Chat' : 'Lihat Chat'}
+                  </button>
                 </div>
               )}
+
+              {o.status === 'cancelled' && (
+                <div className="mt-4 border-t pt-4">
+                  <button onClick={() => setChatOpen(p => ({ ...p, [o.id]: !p[o.id] }))} className="text-xs font-bold text-gray-500 hover:text-[#0e76f1] flex items-center gap-1.5">
+                    <Icon name="chat" size={14} /> {chatOpen[o.id] ? 'Tutup Chat' : 'Lihat Chat'}
+                  </button>
+                </div>
+              )}
+
+              {chatOpen[o.id] && <ChatBox orderId={o.id} partner={partner} />}
             </div>
           )
         })}

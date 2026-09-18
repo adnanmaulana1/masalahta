@@ -84,6 +84,10 @@ type CreateGigInput struct {
 
 func CreateGig(c *gin.Context) {
 	uid, _ := c.Get("user_id")
+	if role, _ := c.Get("role"); role != "freelancer" {
+		c.JSON(http.StatusForbidden, gin.H{"error": "Hanya freelancer yang bisa menjual jasa"})
+		return
+	}
 	var input CreateGigInput
 	if err := c.ShouldBindJSON(&input); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})

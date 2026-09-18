@@ -15,7 +15,7 @@ const PKG_OPTIONS = [
 ]
 
 export default function CreateGig() {
-  const { user } = useAuth()
+  const { user, loading } = useAuth()
   const nav = useNavigate()
   const [cats, setCats] = useState([])
   const [form, setForm] = useState({ title: '', description: '', category_id: '' })
@@ -28,6 +28,10 @@ export default function CreateGig() {
   const imgRef = useRef(null)
 
   useEffect(() => { api.get('/categories').then(r => setCats(r.data.data || [])).catch(() => {}) }, [])
+
+  useEffect(() => {
+    if (!loading && user && user.role !== 'freelancer') nav('/403', { replace: true })
+  }, [loading, user, nav])
 
   const updatePkg = (i, patch) => setPackages(p => p.map((x, idx) => idx === i ? { ...x, ...patch } : x))
   const addPkg = () => {
@@ -67,6 +71,7 @@ export default function CreateGig() {
   const submit = async (e) => {
     e.preventDefault()
     if (!user) { showToast('Login dulu untuk membuat jasa', 'error'); nav('/login'); return }
+    if (user.role !== 'freelancer') { showToast('Hanya freelancer yang bisa menjual jasa', 'error'); nav('/403'); return }
     setSaving(true)
     try {
       const payload = {

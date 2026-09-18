@@ -88,7 +88,7 @@ export default function Explore() {
       </div>
 
       {/* active filter chips */}
-      <div className="flex items-center gap-2 mb-4 overflow-x-auto scrollbar-hide -mx-4 px-4 lg:mx-0 lg:px-0">
+      <div className="flex items-center gap-2 mb-4 overflow-x-auto no-scrollbar -mx-4 px-4 lg:mx-0 lg:px-0">
         <button onClick={() => setShowFilter(!showFilter)} className="lg:hidden tag shrink-0">
           <Icon name="sliders" size={14} /> Filter
         </button>
