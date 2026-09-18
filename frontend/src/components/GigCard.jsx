@@ -7,7 +7,9 @@ import { useWishlist } from '../context/WishlistContext'
 export default function GigCard({ gig, index = 0 }) {
   const images = parseImages(gig.images)
   const img = images[0] || 'https://images.unsplash.com/photo-1611224923853-80b023f02d71?w=400'
-  const price = gig.packages?.[0]?.price || 150000
+  const isFixed = gig.price_type === 'fixed' || gig.price_type === 'custom'
+  const price = isFixed ? gig.base_price : (gig.packages?.[0]?.price || 150000)
+  const priceLabel = gig.is_custom ? 'Konsultasi' : isFixed ? `${formatIDR(price)}${gig.unit ? ` / ${gig.unit}` : ''}` : formatIDR(price)
   const user = gig.user || {}
   const style = { animationDelay: `${index * 60}ms` }
   const { has, toggle } = useWishlist()
@@ -61,8 +63,9 @@ export default function GigCard({ gig, index = 0 }) {
         <h3 className="mt-2 text-[13px] font-bold leading-snug text-ink line-clamp-2 min-h-[36px] group-hover:text-[#0e76f1] transition-colors">{gig.title}</h3>
 
         <div className="mt-3 pt-3 border-t border-gray-100">
-          <div className="text-[11px] text-gray-400 font-medium">Mulai dari</div>
-          <div className="font-extrabold text-[15px] text-[#0e76f1] leading-none mt-1">{formatIDR(price)}</div>
+          <div className="text-[11px] text-gray-400 font-medium">{gig.is_custom ? 'Harga' : 'Mulai dari'}</div>
+          <div className={`font-extrabold text-[15px] leading-none mt-1 ${gig.is_custom ? 'text-emerald-600' : 'text-[#0e76f1]'}`}>{gig.is_custom ? 'Hubungi' : priceLabel}</div>
+          {isFixed && gig.unit && !gig.is_custom && <div className="text-[10px] text-gray-400">{gig.unit}</div>}
         </div>
       </div>
     </Link>

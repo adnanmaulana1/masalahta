@@ -25,7 +25,7 @@ function compactRp(n) {
 }
 
 export default function Dashboard() {
-  const { user, updateUser } = useAuth()
+  const { user, updateUser, loading } = useAuth()
   const [params, setParams] = useSearchParams()
   const tab = params.get('tab') || 'dashboard'
   const [gigs, setGigs] = useState([])
@@ -63,6 +63,9 @@ export default function Dashboard() {
     return () => { document.body.style.overflow = overflow; document.removeEventListener('keydown', onKey) }
   }, [editOpen])
 
+  if (loading) {
+    return <div className="max-w-[1180px] mx-auto px-4 py-6 space-y-4"><div className="skeleton h-32 rounded-3xl" /><div className="grid grid-cols-2 md:grid-cols-4 gap-3">{[0,1,2,3].map(i=><div key={i} className="skeleton h-24 rounded-2xl" />)}</div></div>
+  }
   if (!user) {
     return (
       <div className="max-w-[1240px] mx-auto px-4 py-16 text-center">

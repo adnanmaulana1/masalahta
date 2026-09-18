@@ -62,8 +62,10 @@ export default function GigDetail() {
     )
   }
 
-  const pkg = gig.packages?.[activePkg] || gig.packages?.[0]
+  const isPackage = !gig.price_type || gig.price_type === 'package'
+  const pkg = isPackage ? (gig.packages?.[activePkg] || gig.packages?.[0]) : null
   const seller = gig.user || {}
+  const isCustom = gig.is_custom || gig.price_type === 'custom'
 
   const startChat = async () => {
     if (!user) { showToast('Login dulu untuk chat', 'error'); navigate('/login'); return }
@@ -79,10 +81,13 @@ export default function GigDetail() {
   }
 
   const handleOrder = async () => {
+    if (isCustom) { startChat(); return }
     if (!user) { showToast('Silakan login terlebih dahulu', 'error'); navigate('/login'); return }
     setOrdering(true)
     try {
-      await api.post('/orders', { gig_id: gig.id, package_id: pkg.id, note })
+      const payload = { gig_id: gig.id, note }
+      if (pkg) payload.package_id = pkg.id
+      await api.post('/orders', payload)
       showToast('Pesanan berhasil dibuat! Cek menu Pesanan.')
       navigate('/orders')
     } catch (e) {
@@ -190,8 +195,8 @@ export default function GigDetail() {
             <h3 className="font-extrabold text-ink mb-3 flex items-center gap-2"><Icon name="info" size={18} className="text-[#0e76f1]" /> Tentang Jasa Ini</h3>
             <p className="text-sm text-gray-600 leading-relaxed whitespace-pre-wrap">{gig.description}</p>
 
-            <h3 className="font-extrabold text-ink mt-6 mb-3 flex items-center gap-2"><Icon name="check" size={18} className="text-emerald-500" /> Apa yang kamu dapatkan?</h3>
-            {(() => { try { const f = JSON.parse(pkg?.features || '[]'); return <ul className="grid sm:grid-cols-2 gap-2">{f.map((x, i) => <PackageFeature key={i}>{x}</PackageFeature>)}</ul> } catch { return null } })()}
+            {isPackage && pkg && (<><h3 className="font-extrabold text-ink mt-6 mb-3 flex items-center gap-2"><Icon name="check" size={18} className="text-emerald-500" /> Apa yang kamu dapatkan?</h3>{(() => { try { const f = JSON.parse(pkg?.features || '[]'); return <ul className="grid sm:grid-cols-2 gap-2">{f.map((x, i) => <PackageFeature key={i}>{x}</PackageFeature>)}</ul> } catch { return null } })()}</>)}
+            {!isPackage && <p className="mt-4 text-sm text-gray-500 bg-gray-50 rounded-xl px-4 py-3 border">{isCustom ? 'Harga menyesuaikan kebutuhan — chat dulu untuk penawaran.' : `Harga ${formatIDR(gig.base_price)} ${gig.unit || ''}`}</p>}
           </div>
 
           {/* seller card */}
@@ -281,9 +286,10 @@ export default function GigDetail() {
         {/* RIGHT - pricing card */}
         <div id="order-section" className="lg:sticky lg:top-28 bg-white rounded-2xl border border-gray-200 shadow-card overflow-hidden">
           <div className="px-5 pt-5 pb-3">
-            <h3 className="font-extrabold text-ink text-[15px] leading-none">Pilih Paket</h3>
-            <p className="text-xs text-gray-400 mt-1">Bandingkan dan pilih yang paling sesuai</p>
+            <h3 className="font-extrabold text-ink text-[15px] leading-none">{isPackage ? 'Pilih Paket' : isCustom ? 'Harga' : 'Detail Layanan'}</h3>
+            <p className="text-xs text-gray-400 mt-1">{isPackage ? 'Bandingkan dan pilih yang paling sesuai' : isCustom ? 'Hubungi freelancer untuk penawaran' : `${gig.unit || 'Harga tetap'}`}</p>
           </div>
+          {isPackage ? (
           <div className="px-4 pb-4 space-y-3">
             {gig.packages?.map((p, i) => {
               const active = activePkg === i
@@ -325,6 +331,16 @@ export default function GigDetail() {
               )
             })}
           </div>
+          ) : (
+            <div className="px-5 pb-4">
+              <div className="rounded-2xl bg-gradient-to-br from-[#0e76f1] to-[#6a3cff] text-white p-5">
+                <div className="text-[11px] font-bold uppercase tracking-wider opacity-80">{gig.unit || 'Harga'}</div>
+                <div className="text-2xl font-extrabold mt-1">{isCustom ? 'Hubungi' : formatIDR(gig.base_price)}</div>
+                {!isCustom && <div className="text-sm opacity-80">{gig.unit}</div>}
+                {isCustom && <div className="text-xs opacity-80 mt-1">Harga nego sesuai kebutuhan</div>}
+              </div>
+            </div>
+          )}
 
           <div className="px-5 pb-5">
             <label className="block">
@@ -336,8 +352,8 @@ export default function GigDetail() {
               />
             </label>
 
-            <button onClick={handleOrder} disabled={ordering} className="btn-primary w-full mt-4 !rounded-xl !py-3.5">
-              {ordering ? <><span className="inline-block w-4 h-4 border-2 border-white/40 border-t-white rounded-full animate-spin"></span> Memproses...</> : <>Pesan Sekarang — {formatIDR(pkg?.price)} <Icon name="arrowRight" size={17} /></>}
+            <button onClick={handleOrder} disabled={ordering} className={`w-full mt-4 !rounded-xl !py-3.5 ${isCustom ? 'btn-outline !border-[#0e76f1] !text-[#0e76f1]' : 'btn-primary'}`}>
+              {ordering ? <><span className="inline-block w-4 h-4 border-2 border-white/40 border-t-white rounded-full animate-spin"></span> Memproses...</> : isCustom ? <><Icon name="chat" size={17} /> Konsultasi & Nego</> : <>Pesan Sekarang — {formatIDR(isPackage ? pkg?.price : gig.base_price)} <Icon name="arrowRight" size={17} /></>}
             </button>
 
             <div className="mt-3 grid grid-cols-3 gap-2 text-center text-[11px] font-semibold text-gray-500">

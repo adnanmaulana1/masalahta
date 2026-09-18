@@ -84,6 +84,7 @@ func SeedData() {
 		{Name: "Fotografi", Slug: "fotografi", Icon: "📸"},
 		{Name: "Musik & Audio", Slug: "musik-audio", Icon: "🎵"},
 		{Name: "Bisnis", Slug: "bisnis", Icon: "💼"},
+		{Name: "Service AC", Slug: "service-ac", Icon: "❄️"},
 	}
 	for _, c := range categories {
 		DB.Create(&c)
@@ -99,9 +100,10 @@ func SeedData() {
 	DB.Where("username = ?", "dian_design").First(&dian)
 	DB.Where("username = ?", "budi_coder").First(&budi)
 
-	var catDesign, catIT models.Category
+	var catDesign, catIT, catAC models.Category
 	DB.Where("slug = ?", "desain-grafis").First(&catDesign)
 	DB.Where("slug = ?", "website-it").First(&catIT)
+	DB.Where("slug = ?", "service-ac").First(&catAC)
 
 	gigs := []models.Gig{
 		{
@@ -132,14 +134,44 @@ func SeedData() {
 			Images: `["https://images.unsplash.com/photo-1555774698-0b77e0d5fac6?w=600","https://images.unsplash.com/photo-1518770660439-4636190af475?w=600"]`,
 			CategoryID: catIT.ID, UserID: budi.ID, Rating: 5.0, ReviewCount: 23, ViewCount: 1204, IsActive: true,
 		},
+		{
+			Title: "Jasa Cuci AC Split 0.5 - 2 PK Bergaransi Bersih Maksimal",
+			Slug: "cuci-ac-split-bergaransi",
+			Description: "Cuci AC menyeluruh indoor & outdoor, semprot evaporator, cek freon & ampere, garansi 7 hari tidak dingin. Teknisi bersertifikat, area Jabodetabek. Gratis cek kebocoran.",
+			Images: `["https://images.unsplash.com/photo-1621905251189-08b45d6a269e?w=600","https://images.unsplash.com/photo-1581091226825-a6a2a5aee158?w=600"]`,
+			CategoryID: catAC.ID, UserID: budi.ID, Rating: 4.9, ReviewCount: 234, ViewCount: 5120, IsActive: true,
+		},
+		{
+			Title: "Service AC + Isi Freon R32/R410 Lengkap + Cek Kebocoran",
+			Slug: "service-ac-isi-freon-r32",
+			Description: "Service AC tidak dingin? Isi freon R32/R410 original, vakum, pressure test, isi sesuai gramasi pabrik. Termasuk cuci filter & cleaning ringan.",
+			Images: `["https://images.unsplash.com/photo-1617469767053-d3b523a0b982?w=600"]`,
+			CategoryID: catAC.ID, UserID: budi.ID, Rating: 4.8, ReviewCount: 98, ViewCount: 3210, IsActive: true,
+		},
+		{
+			Title: "Bongkar Pasang AC Split + Instalasi Pipa & Vakum Bergaransi 30 Hari",
+			Slug: "bongkar-pasang-ac-split",
+			Description: "Bongkar pasang AC pindahan kost/kantor/rumah. Instalasi pipa AC, braket, vakum, test running. Garansi instalasi 30 hari. Harga sudah termasuk freon awal.",
+			Images: `["https://images.unsplash.com/photo-1504148455328-c376907d081c?w=600"]`,
+			CategoryID: catAC.ID, UserID: budi.ID, Rating: 5.0, ReviewCount: 67, ViewCount: 1890, IsActive: true,
+		},
 	}
 	for i := range gigs {
 		DB.Create(&gigs[i])
-		// create packages
-		packages := []models.Package{
-			{GigID: gigs[i].ID, Name: "Basic", Description: "Paket hemat, cocok untuk kebutuhan dasar", Price: int64(150000 + i*50000), DeliveryDays: 3, Revisions: 2, Features: `["1 Konsep","2 Revisi","File JPG/PNG"]`},
-			{GigID: gigs[i].ID, Name: "Standard", Description: "Paling populer, fitur lengkap", Price: int64(350000 + i*50000), DeliveryDays: 2, Revisions: 5, Features: `["3 Konsep","5 Revisi","File Master AI/EPS","Support Prioritas"]`},
-			{GigID: gigs[i].ID, Name: "Premium", Description: "All in, terbaik untuk brand besar", Price: int64(750000 + i*100000), DeliveryDays: 1, Revisions: 10, Features: `["5 Konsep","Unlimited Revisi","Brand Guideline","Mockup 3D","Konsultasi 1 Jam"]`},
+		// create packages - custom for Service AC
+		var packages []models.Package
+		if gigs[i].CategoryID == catAC.ID {
+			packages = []models.Package{
+				{GigID: gigs[i].ID, Name: "Basic", Description: "Cuci saja", Price: 75000, DeliveryDays: 1, Revisions: 1, Features: `["Cuci indoor+outdoor","Cek freon","Garansi 7 hari"]`},
+				{GigID: gigs[i].ID, Name: "Standard", Description: "Paling laris", Price: 150000, DeliveryDays: 1, Revisions: 2, Features: `["Cuci lengkap","Isi freon 1/2 PK","Vakum & test","Garansi 14 hari"]`},
+				{GigID: gigs[i].ID, Name: "Premium", Description: "Full service", Price: 285000, DeliveryDays: 1, Revisions: 3, Features: `["Bongkar pasang","Pipa 3m","Vakum","Isi freon full","Garansi 30 hari"]`},
+			}
+		} else {
+			packages = []models.Package{
+				{GigID: gigs[i].ID, Name: "Basic", Description: "Paket hemat, cocok untuk kebutuhan dasar", Price: int64(150000 + i*50000), DeliveryDays: 3, Revisions: 2, Features: `["1 Konsep","2 Revisi","File JPG/PNG"]`},
+				{GigID: gigs[i].ID, Name: "Standard", Description: "Paling populer, fitur lengkap", Price: int64(350000 + i*50000), DeliveryDays: 2, Revisions: 5, Features: `["3 Konsep","5 Revisi","File Master AI/EPS","Support Prioritas"]`},
+				{GigID: gigs[i].ID, Name: "Premium", Description: "All in, terbaik untuk brand besar", Price: int64(750000 + i*100000), DeliveryDays: 1, Revisions: 10, Features: `["5 Konsep","Unlimited Revisi","Brand Guideline","Mockup 3D","Konsultasi 1 Jam"]`},
+			}
 		}
 		for _, p := range packages {
 			DB.Create(&p)

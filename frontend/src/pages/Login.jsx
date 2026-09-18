@@ -86,8 +86,6 @@ export default function Login() {
     setLoading(false)
   }
 
-  const fillDemo = (email) => setForm({ email, password: 'password123' })
-
   return (
     <AuthLayout>
       <div className="bg-white rounded-2xl border shadow-card p-7">
@@ -121,18 +119,7 @@ export default function Login() {
           </button>
         </form>
 
-        <div className="flex items-center gap-3 mt-6 mb-4">
-          <div className="flex-1 h-px bg-gray-200"></div>
-          <span className="text-[11px] font-bold text-gray-400 uppercase tracking-wider">Coba akun demo</span>
-          <div className="flex-1 h-px bg-gray-200"></div>
-        </div>
-        <div className="grid grid-cols-3 gap-2">
-          {[{ l: 'Client', e: 'andi@example.com' }, { l: 'Designer', e: 'dian@example.com' }, { l: 'Dev', e: 'budi@example.com' }].map(d => (
-            <button key={d.l} onClick={() => fillDemo(d.e)} className="text-xs font-semibold bg-gray-50 border border-gray-200 rounded-xl py-2.5 hover:border-[#0e76f1] hover:text-[#0e76f1] transition-colors">
-              {d.l}
-            </button>
-          ))}
-        </div>
+        {/* demo accounts disabled */}
 
         <p className="text-sm text-center mt-6 text-gray-500">Belum punya akun? <Link to="/register" className="font-bold text-[#0e76f1] hover:underline">Daftar gratis</Link></p>
       </div>

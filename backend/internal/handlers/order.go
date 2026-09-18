@@ -11,7 +11,7 @@ import (
 
 type CreateOrderInput struct {
 	GigID     uint   `json:"gig_id" binding:"required"`
-	PackageID uint   `json:"package_id" binding:"required"`
+	PackageID *uint  `json:"package_id"`
 	Note      string `json:"note"`
 }
 
@@ -22,19 +22,44 @@ func CreateOrder(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
-	var pkg models.Package
-	if err := config.DB.First(&pkg, input.PackageID).Error; err != nil {
-		c.JSON(http.StatusNotFound, gin.H{"error": "Paket tidak ditemukan"})
-		return
-	}
 	var gig models.Gig
 	if err := config.DB.First(&gig, input.GigID).Error; err != nil {
 		c.JSON(http.StatusNotFound, gin.H{"error": "Gig tidak ditemukan"})
 		return
 	}
+	var pkg models.Package
+	var price int64
+	var pkgID uint
+	if gig.PriceType == "package" || gig.PriceType == "" {
+		if input.PackageID == nil {
+			c.JSON(http.StatusBadRequest, gin.H{"error": "Paket wajib dipilih"})
+			return
+		}
+		if err := config.DB.First(&pkg, *input.PackageID).Error; err != nil {
+			c.JSON(http.StatusNotFound, gin.H{"error": "Paket tidak ditemukan"})
+			return
+		}
+		price = pkg.Price
+		pkgID = pkg.ID
+	} else {
+		if input.PackageID != nil {
+			_ = config.DB.First(&pkg, *input.PackageID).Error
+			if pkg.ID != 0 {
+				price = pkg.Price
+				pkgID = pkg.ID
+			} else {
+				price = gig.BasePrice
+			}
+		} else {
+			price = gig.BasePrice
+		}
+		if gig.IsCustom {
+			price = 0
+		}
+	}
 	order := models.Order{
-		GigID: gig.ID, PackageID: pkg.ID, ClientID: uid.(uint), FreelancerID: gig.UserID,
-		Price: pkg.Price, Status: "pending", Note: input.Note,
+		GigID: gig.ID, PackageID: pkgID, ClientID: uid.(uint), FreelancerID: gig.UserID,
+		Price: price, Status: "pending", Note: input.Note,
 	}
 	config.DB.Create(&order)
 	config.DB.Preload("Gig").Preload("Package").Preload("Client").Preload("Freelancer").First(&order, order.ID)

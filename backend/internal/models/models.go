@@ -43,6 +43,10 @@ type Gig struct {
 	UserID      uint      `json:"user_id"`
 	User        User      `gorm:"foreignKey:UserID" json:"user"`
 	Packages    []Package `json:"packages"`
+	PriceType   string    `gorm:"size:20;default:package" json:"price_type"` // package | fixed | custom
+	BasePrice   int64     `json:"base_price"`
+	Unit        string    `gorm:"size:30" json:"unit"` // per unit, per jam, per kunjungan
+	IsCustom    bool      `json:"is_custom"`
 	Rating      float64   `json:"rating"`
 	ReviewCount int       `json:"review_count"`
 	ViewCount   int       `json:"view_count"`

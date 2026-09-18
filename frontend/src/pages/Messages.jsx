@@ -13,7 +13,7 @@ const getSeen = (orderId) => Number(localStorage.getItem(seenKey(orderId)) || 0)
 const setSeen = (orderId) => localStorage.setItem(seenKey(orderId), String(Date.now()))
 
 export default function Messages() {
-  const { user } = useAuth()
+  const { user, loading: authLoading } = useAuth()
   const { onChat, isOnline, checkPresence } = useRealtime()
   const [convos, setConvos] = useState([])
   const [loading, setLoading] = useState(true)
@@ -24,6 +24,8 @@ export default function Messages() {
   })
   const [tick, setTick] = useState(0)
 
+  const [q, setQ] = useState('')
+  const [filter, setFilter] = useState('all') // all | unread | order | tanya
   const refresh = () => {
     api.get('/conversations').then(r => {
       setConvos(r.data.data || [])
@@ -68,8 +70,26 @@ export default function Messages() {
 
   const active = useMemo(() => convos.find(c => c.id === activeId), [convos, activeId])
   const partnerOf = (c) => (user?.id === c.client_id ? c.freelancer : c.client)
-  const isUnread = (c) => c.last_message && c.last_message.sender_id !== user?.id && new Date(c.last_message.created_at).getTime() > getSeen(c.id)
+  const isUnread = (c) => !!user && c.last_message && c.last_message.sender_id !== user.id && new Date(c.last_message.created_at).getTime() > getSeen(c.id)
 
+  const filtered = useMemo(() => {
+    if (!user) return []
+    return convos.filter(c => {
+      if (filter === 'unread' && !isUnread(c)) return false
+      if (filter === 'order' && !c.order_id) return false
+      if (filter === 'tanya' && c.order_id) return false
+      if (q) {
+        const p = partnerOf(c)
+        const hay = `${p?.full_name || ''} ${p?.username || ''} ${c.gig?.title || ''} ${c.last_message?.body || ''}`.toLowerCase()
+        if (!hay.includes(q.toLowerCase())) return false
+      }
+      return true
+    })
+  }, [convos, filter, q, tick, user])
+
+  if (authLoading) {
+    return <div className="max-w-[1100px] mx-auto px-4 py-6"><div className="skeleton h-24 rounded-2xl" /></div>
+  }
   if (!user) {
     return (
       <div className="max-w-[1240px] mx-auto px-4 py-16 text-center">
@@ -83,21 +103,39 @@ export default function Messages() {
     <div className="max-w-[1100px] mx-auto px-4 py-6">
       <h1 className="text-xl font-extrabold text-ink">Pesan</h1>
       <p className="text-sm text-gray-500 mt-1">Semua percakapan order-mu dalam satu tempat</p>
+      <div className="mt-4 flex flex-wrap items-center gap-2">
+        <div className="relative flex-1 min-w-[180px] max-w-sm">
+          <Icon name="search" size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
+          <input value={q} onChange={e=>setQ(e.target.value)} placeholder="Cari pesan / orang / jasa..." className="w-full rounded-xl border border-gray-200 bg-white pl-9 pr-3 py-2.5 text-sm outline-none focus:border-[#0e76f1] focus:ring-2 focus:ring-blue-100" />
+        </div>
+        <div className="flex items-center gap-1.5 overflow-x-auto no-scrollbar">
+          {[
+            ['all','Semua'],
+            ['unread','Belum dibaca'],
+            ['order','Order'],
+            ['tanya','Tanya'],
+          ].map(([v,l]) => (
+            <button key={v} onClick={()=>setFilter(v)} className={`shrink-0 rounded-full px-3.5 py-2 text-xs font-bold border transition ${filter===v ? 'bg-[#0e76f1] text-white border-[#0e76f1]' : 'bg-white text-gray-600 border-gray-200 hover:border-[#0e76f1] hover:text-[#0e76f1]'}`}>
+              {l} {v==='unread' && convos.filter(isUnread).length>0 && <span className={`ml-1 rounded-full px-1.5 py-0.5 text-[10px] ${filter===v ? 'bg-white/20' : 'bg-blue-50 text-[#0e76f1]'}`}>{convos.filter(isUnread).length}</span>}
+            </button>
+          ))}
+        </div>
+      </div>
 
       <div className="mt-5 grid md:grid-cols-[320px_1fr] gap-4 items-start">
         {/* daftar percakapan */}
         <div className={`rounded-2xl border border-gray-200/70 bg-white shadow-sm overflow-hidden ${activeId ? 'hidden md:block' : ''}`}>
           {loading ? (
             <div className="p-4 space-y-3">{[0, 1, 2].map(i => <div key={i} className="skeleton h-14" />)}</div>
-          ) : convos.length === 0 ? (
+          ) : filtered.length === 0 ? (
             <div className="p-10 text-center">
               <div className="w-14 h-14 mx-auto rounded-2xl bg-gray-100 flex items-center justify-center text-gray-400 mb-3"><Icon name="chat" size={24} /></div>
-              <div className="font-bold text-ink text-sm">Belum ada percakapan</div>
-              <div className="text-xs text-gray-500 mt-1">Buat order untuk mulai chat.</div>
+              <div className="font-bold text-ink text-sm">{convos.length===0 ? 'Belum ada percakapan' : 'Tidak ada hasil'}</div>
+              <div className="text-xs text-gray-500 mt-1">{convos.length===0 ? 'Buat order untuk mulai chat.' : 'Coba ubah filter atau kata kunci.'}</div>
             </div>
           ) : (
             <div className="divide-y max-h-[70vh] overflow-y-auto">
-              {convos.map(c => {
+              {filtered.map(c => {
                 const p = partnerOf(c)
                 const unread = isUnread(c)
                 return (

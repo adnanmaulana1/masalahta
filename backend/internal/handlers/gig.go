@@ -72,6 +72,10 @@ type CreateGigInput struct {
 	Description string `json:"description" binding:"required"`
 	CategoryID  uint   `json:"category_id" binding:"required"`
 	Images      []string `json:"images"`
+	PriceType   string `json:"price_type"`
+	BasePrice   int64  `json:"base_price"`
+	Unit        string `json:"unit"`
+	IsCustom    bool   `json:"is_custom"`
 	Packages    []struct {
 		Name         string   `json:"name"`
 		Description  string   `json:"description"`
@@ -101,6 +105,9 @@ func CreateGig(c *gin.Context) {
 	slug = strings.ReplaceAll(slug, "/", "-")
 	slug = slug + "-" + uuid.New().String()[:6]
 
+	if input.PriceType == "" {
+		input.PriceType = "package"
+	}
 	gig := models.Gig{
 		Title:       input.Title,
 		Slug:        slug,
@@ -110,17 +117,23 @@ func CreateGig(c *gin.Context) {
 		UserID:      uid.(uint),
 		Rating:      5.0,
 		IsActive:    true,
+		PriceType:   input.PriceType,
+		BasePrice:   input.BasePrice,
+		Unit:        input.Unit,
+		IsCustom:    input.IsCustom,
 	}
 	if err := config.DB.Create(&gig).Error; err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
-	for _, p := range input.Packages {
-		feat, _ := json.Marshal(p.Features)
-		pkg := models.Package{
-			GigID: gig.ID, Name: p.Name, Description: p.Description, Price: p.Price, DeliveryDays: p.DeliveryDays, Revisions: p.Revisions, Features: string(feat),
+	if input.PriceType == "package" {
+		for _, p := range input.Packages {
+			feat, _ := json.Marshal(p.Features)
+			pkg := models.Package{
+				GigID: gig.ID, Name: p.Name, Description: p.Description, Price: p.Price, DeliveryDays: p.DeliveryDays, Revisions: p.Revisions, Features: string(feat),
+			}
+			config.DB.Create(&pkg)
 		}
-		config.DB.Create(&pkg)
 	}
 	config.DB.Preload("Packages").Preload("Category").Preload("User").First(&gig, gig.ID)
 	c.JSON(http.StatusCreated, gig)
