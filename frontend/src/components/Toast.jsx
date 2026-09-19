@@ -48,11 +48,11 @@ export default function Toast() {
       {toasts.map((t) => (
         <div
           key={t.id}
-          className={`toast-in pointer-events-auto w-full md:w-[340px] max-w-[400px] flex items-start gap-3 rounded-xl border border-l-4 border-gray-200 bg-white px-4 py-3 text-sm font-medium text-gray-800 shadow-lift ${accent[t.type]}`}
+          className={`toast-in pointer-events-auto w-full md:w-[340px] max-w-[400px] flex items-start gap-3 rounded-xl border border-l-4 border-gray-200 dark:border-white/10 bg-white dark:bg-slate-900 px-4 py-3 text-sm font-medium text-gray-800 dark:text-gray-100 shadow-lift ${accent[t.type]}`}
         >
           <span className="mt-0.5 shrink-0"><ToastIcon type={t.type} /></span>
           <span className="flex-1 py-0.5 leading-snug">{t.message}</span>
-          <button onClick={() => dismiss(t.id)} className="p-1 -mr-1 rounded-md text-gray-400 hover:text-gray-600 hover:bg-gray-100 transition-colors">
+          <button onClick={() => dismiss(t.id)} className="p-1 -mr-1 rounded-md text-gray-400 dark:text-gray-400 hover:text-gray-600 hover:bg-gray-100 dark:hover:bg-white/10 transition-colors">
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><path d="M18 6 6 18M6 6l12 12" /></svg>
           </button>
         </div>

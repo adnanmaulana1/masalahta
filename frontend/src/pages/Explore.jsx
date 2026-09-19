@@ -65,25 +65,25 @@ export default function Explore() {
           <Icon name="search" size={20} />
         </div>
         <div className="min-w-0 flex-1">
-          <h1 className="text-base md:text-xl font-extrabold text-ink leading-tight truncate">
+          <h1 className="text-base md:text-xl font-extrabold text-ink leading-tight truncate dark:text-gray-100">
             {q ? `Hasil pencarian "` : 'Jelajahi Jasa '}
             {q && <span className="text-[#0e76f1]">{q}</span>}{q ? '"' : category || ''}
           </h1>
-          <p className="text-xs md:text-[13px] text-gray-500">{loading ? 'Memuat...' : `${total} jasa ditemukan`}</p>
+          <p className="text-xs md:text-[13px] text-gray-500 dark:text-gray-400">{loading ? 'Memuat...' : `${total} jasa ditemukan`}</p>
         </div>
       </div>
 
       {/* in-page search */}
-      <div className="relative flex items-center gap-2 bg-white rounded-2xl border border-gray-200/80 px-3.5 py-2.5 focus-within:border-[#0e76f1] focus-within:ring-4 focus-within:ring-blue-500/10 transition-all mb-3">
+      <div className="relative flex items-center gap-2 bg-white rounded-2xl border border-gray-200/80 dark:border-white/10 px-3.5 py-2.5 focus-within:border-[#0e76f1] focus-within:ring-4 focus-within:ring-blue-500/10 transition-all mb-3 dark:bg-slate-900">
         <Icon name="search" size={18} className="text-gray-400 shrink-0" />
         <input
           value={search}
           onChange={e => setSearch(e.target.value)}
           placeholder="Cari jasa, contoh: desain logo, website..."
-          className="flex-1 min-w-0 bg-transparent outline-none text-sm text-ink placeholder:text-gray-400"
+          className="flex-1 min-w-0 bg-transparent outline-none text-sm text-ink placeholder:text-gray-400 dark:placeholder-gray-500 dark:text-slate-300"
         />
         {search && (
-          <button type="button" onClick={() => setSearch('')} className="p-1 text-gray-400 hover:text-gray-600"><Icon name="x" size={16} /></button>
+          <button type="button" onClick={() => setSearch('')} className="p-1 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"><Icon name="x" size={16} /></button>
         )}
       </div>
 
@@ -93,12 +93,12 @@ export default function Explore() {
           <Icon name="sliders" size={14} /> Filter
         </button>
         {category && (
-          <button onClick={() => update({ category: '' })} className="shrink-0 inline-flex items-center gap-1.5 rounded-full bg-blue-50 text-[#0e76f1] border border-blue-200 px-3 py-1.5 text-xs font-semibold">
+          <button onClick={() => update({ category: '' })} className="shrink-0 inline-flex items-center gap-1.5 rounded-full bg-blue-50 dark:bg-blue-500/10 text-[#0e76f1] dark:text-blue-400 border border-blue-200 dark:border-blue-500/25 px-3 py-1.5 text-xs font-semibold">
             {cats.find(c => c.slug === category)?.icon} {cats.find(c => c.slug === category)?.name} <Icon name="x" size={12} />
           </button>
         )}
         {q && (
-          <button onClick={() => update({ q: '' })} className="shrink-0 inline-flex items-center gap-1.5 rounded-full bg-blue-50 text-[#0e76f1] border border-blue-200 px-3 py-1.5 text-xs font-semibold">
+          <button onClick={() => update({ q: '' })} className="shrink-0 inline-flex items-center gap-1.5 rounded-full bg-blue-50 dark:bg-blue-500/10 text-[#0e76f1] dark:text-blue-400 border border-blue-200 dark:border-blue-500/25 px-3 py-1.5 text-xs font-semibold">
             "{q}" <Icon name="x" size={12} />
           </button>
         )}
@@ -107,7 +107,7 @@ export default function Explore() {
           <select
             value={sort}
             onChange={e => update({ sort: e.target.value })}
-            className="input-field !w-auto !py-2 !px-3 !text-xs font-medium !rounded-full cursor-pointer"
+            className="input-field !w-auto !py-2 !px-3 !text-xs font-medium !rounded-full cursor-pointer dark:!text-slate-300 [&>option]:dark:bg-slate-900 [&>option]:dark:text-slate-300"
           >
             {sorts.map(s => <option key={s.v} value={s.v}>{s.l}</option>)}
           </select>
@@ -118,11 +118,11 @@ export default function Explore() {
         {/* desktop sidebar */}
         <aside className="hidden lg:block w-[230px] shrink-0">
           <div className="card p-4 sticky top-28 max-h-[calc(100vh-8rem)] overflow-auto">
-            <h3 className="font-bold text-sm mb-3 px-1">Kategori</h3>
+            <h3 className="font-bold text-sm mb-3 px-1 dark:text-slate-300">Kategori</h3>
             <div className="space-y-0.5">
               <button
                 onClick={() => update({ category: '' })}
-                className={`w-full flex items-center gap-2.5 px-3 py-2.5 rounded-xl text-[13px] font-medium transition-colors ${!category ? 'bg-blue-50 text-[#0e76f1] font-bold' : 'text-gray-700 hover:bg-gray-50'}`}
+                className={`w-full flex items-center gap-2.5 px-3 py-2.5 rounded-xl text-[13px] font-medium transition-colors ${!category ? 'bg-blue-50 dark:bg-blue-500/10 text-[#0e76f1] dark:text-blue-400 font-bold' : 'text-gray-700 dark:text-slate-300 hover:bg-gray-50 dark:hover:bg-white/5'}`}
               >
                 🗂️ Semua Kategori
               </button>
@@ -130,15 +130,15 @@ export default function Explore() {
                 <button
                   key={c.id}
                   onClick={() => update({ category: c.slug })}
-                  className={`w-full flex items-center gap-2.5 px-3 py-2.5 rounded-xl text-[13px] font-medium transition-colors ${category === c.slug ? 'bg-blue-50 text-[#0e76f1] font-bold' : 'text-gray-700 hover:bg-gray-50'}`}
+                  className={`w-full flex items-center gap-2.5 px-3 py-2.5 rounded-xl text-[13px] font-medium transition-colors ${category === c.slug ? 'bg-blue-50 dark:bg-blue-500/10 text-[#0e76f1] dark:text-blue-400 font-bold' : 'text-gray-700 dark:text-slate-300 hover:bg-gray-50 dark:hover:bg-white/5'}`}
                 >
                   <span>{c.icon}</span> {c.name}
                 </button>
               ))}
             </div>
-            <div className="mt-5 pt-4 border-t">
-              <h3 className="font-bold text-sm mb-2.5 px-1">Informasi</h3>
-              <div className="space-y-2 text-[12px] text-gray-500 px-1">
+            <div className="mt-5 pt-4 border-t dark:border-white/10">
+              <h3 className="font-bold text-sm mb-2.5 px-1 dark:text-slate-300">Informasi</h3>
+              <div className="space-y-2 text-[12px] text-gray-500 px-1 dark:text-gray-400">
                 <div className="flex items-center gap-2"><Icon name="verified" size={14} className="text-emerald-500" /> Freelancer terverifikasi</div>
                 <div className="flex items-center gap-2"><Icon name="shield" size={14} className="text-[#0e76f1]" /> Dana aman via escrow</div>
                 <div className="flex items-center gap-2"><Icon name="clock" size={14} className="text-amber-500" /> Respon cepat &lt; 1 jam</div>
@@ -151,15 +151,15 @@ export default function Explore() {
         {showFilter && (
           <div className="fixed inset-0 z-50 lg:hidden">
             <div className="absolute inset-0 bg-black/40 slide-in-left-face" onClick={() => setShowFilter(false)}></div>
-            <div className="absolute left-0 top-0 bottom-0 w-[80%] max-w-[300px] bg-white shadow-2xl p-5 overflow-auto slide-in-left z-10">
+            <div className="absolute left-0 top-0 bottom-0 w-[80%] max-w-[300px] bg-white shadow-2xl p-5 overflow-auto slide-in-left z-10 dark:bg-slate-900">
               <div className="flex items-center justify-between mb-4">
-                <h3 className="font-extrabold text-ink">Kategori</h3>
-                <button onClick={() => setShowFilter(false)} className="p-2 rounded-full hover:bg-gray-100"><Icon name="x" size={18} /></button>
+                <h3 className="font-extrabold text-ink dark:text-gray-100">Kategori</h3>
+                <button onClick={() => setShowFilter(false)} className="p-2 rounded-full hover:bg-gray-100 dark:hover:bg-white/10"><Icon name="x" size={18} /></button>
               </div>
               <div className="space-y-1">
                 {[catAll, ...cats].map(c => (
                   <button key={c.id} onClick={() => { update({ category: c.slug }); setShowFilter(false) }}
-                          className={`w-full flex items-center gap-2.5 px-3 py-3 rounded-xl text-sm font-medium ${category === c.slug ? 'bg-blue-50 text-[#0e76f1] font-bold' : 'text-gray-700 hover:bg-gray-50'}`}>
+                          className={`w-full flex items-center gap-2.5 px-3 py-3 rounded-xl text-sm font-medium ${category === c.slug ? 'bg-blue-50 dark:bg-blue-500/10 text-[#0e76f1] dark:text-blue-400 font-bold' : 'text-gray-700 dark:text-slate-300 hover:bg-gray-50 dark:hover:bg-white/5'}`}>
                     <span>{c.icon}</span> {c.name}
                   </button>
                 ))}
@@ -177,8 +177,8 @@ export default function Explore() {
           {!loading && gigs.length === 0 && (
             <div className="card p-12 text-center mt-2">
               <div className="w-16 h-16 mx-auto rounded-2xl bg-gray-100 flex items-center justify-center mb-4 text-gray-400"><Icon name="search" size={28} /></div>
-              <h3 className="font-bold text-ink mb-1">Tidak ada jasa ditemukan</h3>
-              <p className="text-sm text-gray-500">Coba kata kunci lain atau jelajahi semua kategori.</p>
+              <h3 className="font-bold text-ink mb-1 dark:text-gray-100">Tidak ada jasa ditemukan</h3>
+              <p className="text-sm text-gray-500 dark:text-gray-400">Coba kata kunci lain atau jelajahi semua kategori.</p>
               <button onClick={() => update({ q: '', category: '' })} className="btn-primary mt-5 !py-2.5">Lihat Semua Jasa</button>
             </div>
           )}

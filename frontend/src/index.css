@@ -17,6 +17,37 @@ body {
   text-rendering: optimizeLegibility;
 }
 
+.dark body, .dark {
+  color-scheme: dark;
+}
+.dark body {
+  background: #101725;
+  color: #c3ccd9;
+}
+
+/* ——— Eye-friendly dark: turunkan kontras tajam ——— */
+.dark .dark\:text-gray-100 { color: #cbd5e1; }
+.dark .dark\:text-white { color: #e2e8f0; }
+.dark img, .dark video { filter: brightness(.88) saturate(.92); }
+.dark .btn-primary { filter: saturate(.85) brightness(.95); box-shadow: none; }
+.dark .btn-primary::after { opacity: .5; }
+.dark ::selection { background: rgba(14, 118, 241, 0.35); color: #e2e8f0; }
+
+/* ——— Elemen kecil di dark: badge, dot, skeleton, scrollbar ——— */
+.dark .skeleton { background-color: rgba(255,255,255,.07); }
+.dark .skeleton::after { background: linear-gradient(to right, transparent, rgba(255,255,255,.12), transparent); }
+.dark ::-webkit-scrollbar { width: 10px; height: 10px; }
+.dark ::-webkit-scrollbar-thumb { background: rgba(255,255,255,.14); border-radius: 8px; border: 2px solid #101725; }
+.dark ::-webkit-scrollbar-track { background: transparent; }
+.dark * { scrollbar-color: rgba(255,255,255,.16) transparent; }
+.dark .ring-white, .dark .ring-2.ring-white { --tw-ring-color: rgba(255,255,255,.14); }
+.dark [class*="bg-red-500"]:not(.btn-primary),
+.dark [class*="bg-emerald-400"],
+.dark [class*="bg-amber-400"] { filter: saturate(.8) brightness(.92); }
+.dark [class*="text-amber-500"] { filter: saturate(.75) brightness(.95); }
+.dark .animate-flow-ping { animation: none; }
+.dark .hero-dots { opacity: .5; }
+
 ::selection { background: rgba(14, 118, 241, 0.16); color: #0b5fd0; }
 
 img { user-select: none; }
@@ -53,13 +84,13 @@ img { user-select: none; }
     @apply inline-flex items-center justify-center gap-1.5 text-sm font-semibold text-gray-600 transition-colors hover:text-[#0e76f1];
   }
   .input-field {
-    @apply w-full rounded-xl border border-gray-300 bg-white px-4 py-3 text-sm text-gray-800 transition outline-none placeholder:text-gray-400 hover:border-gray-400 focus:border-[#0e76f1] focus:ring-4 focus:ring-blue-500/10;
+    @apply w-full rounded-xl border border-gray-300 bg-white px-4 py-3 text-sm text-gray-800 transition outline-none placeholder:text-gray-400 hover:border-gray-400 focus:border-[#0e76f1] focus:ring-4 focus:ring-blue-500/10 dark:bg-slate-900 dark:border-white/10 dark:text-gray-100;
   }
   .card {
-    @apply rounded-2xl border border-gray-200/80 bg-white shadow-sm;
+    @apply rounded-2xl border border-gray-200/80 bg-white shadow-sm dark:bg-slate-900 dark:border-white/10;
   }
   .tag {
-    @apply inline-flex items-center gap-1 rounded-full border border-gray-200 bg-white px-3.5 py-2 text-xs font-medium text-gray-700 transition-colors hover:border-[#0e76f1] hover:text-[#0e76f1];
+    @apply inline-flex items-center gap-1 rounded-full border border-gray-200 bg-white px-3.5 py-2 text-xs font-medium text-gray-700 transition-colors hover:border-[#0e76f1] hover:text-[#0e76f1] dark:bg-slate-800 dark:border-white/10 dark:text-gray-200 dark:hover:border-blue-500/40;
   }
 }
 

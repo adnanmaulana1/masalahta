@@ -83,11 +83,11 @@ export default function Register() {
       {/* right: form */}
       <div className="flex items-center justify-center px-4 py-6 min-h-svh lg:min-h-0 lg:py-0 lg:pl-20 lg:h-screen lg:overflow-hidden bg-gradient-to-b from-gray-50 to-gray-100">
         <div className="w-full max-w-md fade-up">
-          <div className="bg-white rounded-2xl border border-gray-200/80 shadow-[0_20px_60px_-20px_rgba(11,95,208,0.25)] p-5 lg:p-6">
-            <h1 className="text-xl font-extrabold text-ink tracking-tight">Buat akun baru</h1>
-            <p className="text-[13px] text-gray-500 mt-0.5">Isi data di bawah untuk mulai order atau jual jasa.</p>
+          <div className="bg-white rounded-2xl border border-gray-200/80 shadow-[0_20px_60px_-20px_rgba(11,95,208,0.25)] p-5 lg:p-6 dark:bg-slate-900">
+            <h1 className="text-xl font-extrabold text-ink tracking-tight dark:text-gray-100">Buat akun baru</h1>
+            <p className="text-[13px] text-gray-500 mt-0.5 dark:text-gray-400">Isi data di bawah untuk mulai order atau jual jasa.</p>
 
-            <p className="text-[11px] font-bold text-gray-500 uppercase tracking-wider mt-4 mb-1.5">Saya bergabung sebagai</p>
+            <p className="text-[11px] font-bold text-gray-500 uppercase tracking-wider mt-4 mb-1.5 dark:text-gray-400">Saya bergabung sebagai</p>
             {/* role selector */}
             <div className="grid grid-cols-2 gap-2.5 mb-4">
               {roles.map(r => {
@@ -112,26 +112,26 @@ export default function Register() {
             <form onSubmit={submit} className="space-y-3">
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="text-[11px] font-bold text-gray-600 uppercase tracking-wide mb-1.5 block">Username</label>
+                  <label className="text-[11px] font-bold text-gray-600 uppercase tracking-wide mb-1.5 block dark:text-gray-400">Username</label>
                   <div className="relative">
                     <Icon name="users" size={16} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" />
                     <input placeholder="cth. budi_pratama" required value={form.username} onChange={e => setForm({ ...form, username: e.target.value })} className="input-field !pl-10" />
                   </div>
                 </div>
                 <div>
-                  <label className="text-[11px] font-bold text-gray-600 uppercase tracking-wide mb-1.5 block">Nama lengkap</label>
+                  <label className="text-[11px] font-bold text-gray-600 uppercase tracking-wide mb-1.5 block dark:text-gray-400">Nama lengkap</label>
                   <input placeholder="Nama kamu" required value={form.full_name} onChange={e => setForm({ ...form, full_name: e.target.value })} className="input-field" />
                 </div>
               </div>
               <div>
-                <label className="text-[11px] font-bold text-gray-600 uppercase tracking-wide mb-1.5 block">Email</label>
+                <label className="text-[11px] font-bold text-gray-600 uppercase tracking-wide mb-1.5 block dark:text-gray-400">Email</label>
                 <div className="relative">
                   <Icon name="mail" size={16} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" />
                   <input type="email" placeholder="nama@email.com" required value={form.email} onChange={e => setForm({ ...form, email: e.target.value })} className="input-field !pl-10" />
                 </div>
               </div>
               <div>
-                <label className="text-[11px] font-bold text-gray-600 uppercase tracking-wide mb-1.5 block">Password</label>
+                <label className="text-[11px] font-bold text-gray-600 uppercase tracking-wide mb-1.5 block dark:text-gray-400">Password</label>
                 <div className="relative">
                   <Icon name="lock" size={16} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" />
                   <input type={showPw ? 'text' : 'password'} required minLength={6} placeholder="Min. 6 karakter" value={form.password} onChange={e => setForm({ ...form, password: e.target.value })} className="input-field !pl-10 !pr-11" />
@@ -147,7 +147,7 @@ export default function Register() {
               <p className="text-[11px] text-gray-400 text-center leading-relaxed">Dengan mendaftar, kamu menyetujui <Link to="/terms" className="underline hover:text-gray-600">Syarat & Ketentuan</Link> dan <Link to="/privacy" className="underline hover:text-gray-600">Kebijakan Privasi</Link>.</p>
             </form>
 
-            <p className="text-sm text-center mt-4 text-gray-500">Sudah terdaftar? <Link to="/login" className="font-bold text-[#0e76f1] hover:underline">Masuk</Link></p>
+            <p className="text-sm text-center mt-4 text-gray-500 dark:text-gray-400">Sudah terdaftar? <Link to="/login" className="font-bold text-[#0e76f1] hover:underline">Masuk</Link></p>
           </div>
         </div>
       </div>
@@ -171,7 +171,7 @@ export default function Register() {
       ].map((b) => (
         <div key={b.t} className={`hidden lg:flex absolute ${b.z} ${b.cls} items-center gap-2.5 rounded-2xl bg-white pl-2 pr-4 py-2 shadow-[0_20px_45px_rgba(0,0,0,0.35)] pointer-events-none animate-float`} style={{ animationDelay: b.delay }}>
           <span className="w-9 h-9 rounded-xl bg-[#0e76f1]/10 text-[#0e76f1] flex items-center justify-center shrink-0"><Icon name={b.icon} size={17} /></span>
-          <span className="text-xs font-bold text-gray-800 leading-tight">{b.t}<br /><span className="font-medium text-gray-400">Ada.</span></span>
+          <span className="text-xs font-bold text-gray-800 leading-tight dark:text-gray-100">{b.t}<br /><span className="font-medium text-gray-400">Ada.</span></span>
         </div>
       ))}
     </div>

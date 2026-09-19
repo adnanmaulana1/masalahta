@@ -1,6 +1,7 @@
 import { BrowserRouter, Routes, Route, useLocation } from 'react-router-dom'
 import { useEffect } from 'react'
 import { AuthProvider } from './context/AuthContext'
+import { ThemeProvider } from './context/ThemeContext'
 import Header from './components/Header'
 import Footer from './components/Footer'
 import Toast from './components/Toast'
@@ -90,7 +91,7 @@ function Layout() {
   if (import.meta.env.VITE_MAINTENANCE === 'true') return <Maintenance />
 
   return (
-    <div className="min-h-screen flex flex-col">
+    <div className="min-h-screen flex flex-col bg-[#f6f7fb] text-ink dark:bg-[#101725] dark:text-slate-300 transition-colors">
       <OfflineBanner />
       {!isFullPage && <Header />}
       <main className="flex-1">
@@ -106,6 +107,7 @@ function Layout() {
 
 export default function App() {
   return (
+    <ThemeProvider>
     <AuthProvider>
       <WishlistProvider>
       <NotificationProvider>
@@ -119,5 +121,6 @@ export default function App() {
       </NotificationProvider>
       </WishlistProvider>
     </AuthProvider>
+    </ThemeProvider>
   )
 }

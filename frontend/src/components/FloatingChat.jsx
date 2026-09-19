@@ -107,7 +107,7 @@ export default function FloatingChat() {
           const p = partnerOf(c)
           const min = minIds.includes(c.id)
           return (
-            <div key={c.id} className="w-[340px] bg-white rounded-2xl border border-gray-200 shadow-[0_16px_50px_rgba(16,24,40,0.25)] overflow-hidden slide-up">
+            <div key={c.id} className="w-[340px] bg-white dark:bg-slate-900 rounded-2xl border border-gray-200 dark:border-white/10 shadow-[0_16px_50px_rgba(16,24,40,0.25)] overflow-hidden slide-up">
               <button
                 onClick={() => toggleMin(c.id)}
                 className="w-full flex items-center gap-2.5 px-3.5 py-2.5 bg-gradient-to-r from-[#0e76f1] to-[#4a2fd8] text-white text-left"
@@ -146,22 +146,22 @@ export default function FloatingChat() {
         {/* launcher */}
         <div className="relative">
           {listOpen && (
-            <div className="absolute bottom-16 right-0 w-[320px] bg-white rounded-2xl border shadow-[0_16px_50px_rgba(16,24,40,0.25)] overflow-hidden fade-up">
-              <div className="flex items-center gap-2 px-4 py-3 border-b">
-                <h3 className="font-extrabold text-ink text-sm">Pesan</h3>
+            <div className="absolute bottom-16 right-0 w-[320px] bg-white dark:bg-slate-900 rounded-2xl border dark:border-white/10 shadow-[0_16px_50px_rgba(16,24,40,0.25)] overflow-hidden fade-up">
+              <div className="flex items-center gap-2 px-4 py-3 border-b dark:border-white/10">
+                <h3 className="font-extrabold text-ink dark:text-gray-100 text-sm">Pesan</h3>
                 <button onClick={() => { setListOpen(false); navigate('/messages') }} className="ml-auto text-xs font-bold text-[#0e76f1] hover:underline">Buka inbox</button>
               </div>
               <div className="max-h-[380px] overflow-y-auto divide-y">
-                {convos.length === 0 && <p className="text-xs text-gray-400 text-center py-8">Belum ada percakapan.</p>}
+                {convos.length === 0 && <p className="text-xs text-gray-400 dark:text-gray-400 text-center py-8">Belum ada percakapan.</p>}
                 {convos.slice(0, 10).map(c => {
                   const p = partnerOf(c)
                   return (
-                    <button key={c.id} onClick={() => openChat(c.id)} className="w-full flex gap-2.5 px-4 py-3 text-left hover:bg-blue-50/50 transition-colors">
+                    <button key={c.id} onClick={() => openChat(c.id)} className="w-full flex gap-2.5 px-4 py-3 text-left hover:bg-blue-50/50 dark:hover:bg-blue-500/10 transition-colors">
                       <Avatar src={p?.avatar} username={p?.username} size={40} className="shrink-0" />
                       <span className="flex-1 min-w-0">
                         <span className="flex items-center gap-2">
-                          <span className="flex-1 truncate text-[13px] font-bold text-ink">{p?.full_name || p?.username}</span>
-                          {c.last_message && <span className="text-[10px] text-gray-400 shrink-0">{relativeTime(c.last_message.created_at)}</span>}
+                          <span className="flex-1 truncate text-[13px] font-bold text-ink dark:text-gray-100">{p?.full_name || p?.username}</span>
+                          {c.last_message && <span className="text-[10px] text-gray-400 dark:text-gray-400 shrink-0">{relativeTime(c.last_message.created_at)}</span>}
                         </span>
                         <span className="inline-block mt-1">
                           {c.order_id ? (
@@ -170,7 +170,7 @@ export default function FloatingChat() {
                             <span className="text-[10px] font-extrabold bg-amber-50 text-amber-600 rounded-full px-2 py-0.5">Tanya jasa</span>
                           )}
                         </span>
-                        <span className="block truncate text-xs text-gray-500 mt-0.5">{c.last_message ? `${c.last_message.sender_id === user.id ? 'Kamu: ' : ''}${c.last_message.body}` : (c.gig?.title || '')}</span>
+                        <span className="block truncate text-xs text-gray-500 dark:text-gray-400 mt-0.5">{c.last_message ? `${c.last_message.sender_id === user.id ? 'Kamu: ' : ''}${c.last_message.body}` : (c.gig?.title || '')}</span>
                       </span>
                       {isUnread(c) && <span className="w-2.5 h-2.5 rounded-full bg-[#0e76f1] shrink-0 mt-1.5"></span>}
                     </button>

@@ -75,11 +75,11 @@ export default function AvatarCropper({ src, onCancel, onCrop }) {
   return createPortal(
     <div className="fixed inset-0 flex items-end justify-center sm:items-center sm:p-4 overflow-y-auto" style={{ zIndex: 95 }}>
       <div className="fixed inset-0 bg-black/60" onClick={onCancel}></div>
-      <div className="relative w-full sm:max-w-[380px] rounded-t-3xl sm:rounded-3xl bg-white p-5 pb-[max(20px,env(safe-area-inset-bottom))] shadow-2xl slide-up">
+      <div className="relative w-full sm:max-w-[380px] rounded-t-3xl sm:rounded-3xl bg-white dark:bg-slate-900 p-5 pb-[max(20px,env(safe-area-inset-bottom))] shadow-2xl slide-up">
         <div className="w-10 h-1 rounded-full bg-gray-200 mx-auto mb-4 sm:hidden" aria-hidden="true"></div>
         <div className="flex items-center justify-between mb-4">
-          <h3 className="font-extrabold text-ink">Atur Foto Profil</h3>
-          <button onClick={onCancel} className="p-2 rounded-full hover:bg-gray-100 text-gray-500"><Icon name="x" size={18} /></button>
+          <h3 className="font-extrabold text-ink dark:text-gray-100">Atur Foto Profil</h3>
+          <button onClick={onCancel} className="p-2 rounded-full hover:bg-gray-100 dark:hover:bg-white/10 text-gray-500 dark:text-gray-400"><Icon name="x" size={18} /></button>
         </div>
         <div
           ref={boxRef}
@@ -104,11 +104,11 @@ export default function AvatarCropper({ src, onCancel, onCrop }) {
             <circle cx="50" cy="50" r="49" fill="none" stroke="rgba(255,255,255,0.9)" strokeWidth="1" strokeDasharray="3 2" vectorEffect="non-scaling-stroke" />
           </svg>
         </div>
-        <p className="text-[11px] text-gray-400 mt-2 text-center">Geser & zoom • area dalam lingkaran jadi foto profil</p>
+        <p className="text-[11px] text-gray-400 dark:text-gray-400 mt-2 text-center">Geser & zoom • area dalam lingkaran jadi foto profil</p>
         <div className="flex items-center gap-3 mt-3">
-          <Icon name="image" size={16} className="text-gray-400" />
+          <Icon name="image" size={16} className="text-gray-400 dark:text-gray-400" />
           <input type="range" min={1} max={3} step={0.01} value={scale} onChange={e => onZoom(Number(e.target.value))} className="flex-1 accent-[#0e76f1]" aria-label="Zoom" />
-          <span className="text-xs font-bold text-gray-500 w-10 text-right">{Math.round(scale * 100)}%</span>
+          <span className="text-xs font-bold text-gray-500 dark:text-gray-400 w-10 text-right">{Math.round(scale * 100)}%</span>
         </div>
         <button onClick={save} disabled={saving || !nat.w} className="btn-primary w-full mt-4 !py-3">
           {saving ? <span className="inline-block w-4 h-4 border-2 border-white/40 border-t-white rounded-full animate-spin"></span> : 'Simpan Foto'}

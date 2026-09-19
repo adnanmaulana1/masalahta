@@ -93,7 +93,7 @@ export default function Messages() {
   if (!user) {
     return (
       <div className="max-w-[1240px] mx-auto px-4 py-16 text-center">
-        <h1 className="font-extrabold text-ink text-lg">Login untuk membuka pesan</h1>
+        <h1 className="font-extrabold text-ink text-lg dark:text-gray-100">Login untuk membuka pesan</h1>
         <Link to="/login" className="btn-primary mt-5">Masuk</Link>
       </div>
     )
@@ -101,12 +101,12 @@ export default function Messages() {
 
   return (
     <div className="max-w-[1100px] mx-auto px-4 py-6">
-      <h1 className="text-xl font-extrabold text-ink">Pesan</h1>
-      <p className="text-sm text-gray-500 mt-1">Semua percakapan order-mu dalam satu tempat</p>
+      <h1 className="text-xl font-extrabold text-ink dark:text-gray-100">Pesan</h1>
+      <p className="text-sm text-gray-500 mt-1 dark:text-gray-400">Semua percakapan order-mu dalam satu tempat</p>
       <div className="mt-4 flex flex-wrap items-center gap-2">
         <div className="relative flex-1 min-w-[180px] max-w-sm">
           <Icon name="search" size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
-          <input value={q} onChange={e=>setQ(e.target.value)} placeholder="Cari pesan / orang / jasa..." className="w-full rounded-xl border border-gray-200 bg-white pl-9 pr-3 py-2.5 text-sm outline-none focus:border-[#0e76f1] focus:ring-2 focus:ring-blue-100" />
+          <input value={q} onChange={e=>setQ(e.target.value)} placeholder="Cari pesan / orang / jasa..." className="w-full rounded-xl border border-gray-200 bg-white pl-9 pr-3 py-2.5 text-sm outline-none focus:border-[#0e76f1] focus:ring-2 focus:ring-blue-100 dark:bg-slate-900 dark:border-white/10" />
         </div>
         <div className="flex items-center gap-1.5 overflow-x-auto no-scrollbar">
           {[
@@ -130,8 +130,8 @@ export default function Messages() {
           ) : filtered.length === 0 ? (
             <div className="p-10 text-center">
               <div className="w-14 h-14 mx-auto rounded-2xl bg-gray-100 flex items-center justify-center text-gray-400 mb-3"><Icon name="chat" size={24} /></div>
-              <div className="font-bold text-ink text-sm">{convos.length===0 ? 'Belum ada percakapan' : 'Tidak ada hasil'}</div>
-              <div className="text-xs text-gray-500 mt-1">{convos.length===0 ? 'Buat order untuk mulai chat.' : 'Coba ubah filter atau kata kunci.'}</div>
+              <div className="font-bold text-ink text-sm dark:text-gray-100">{convos.length===0 ? 'Belum ada percakapan' : 'Tidak ada hasil'}</div>
+              <div className="text-xs text-gray-500 mt-1 dark:text-gray-400">{convos.length===0 ? 'Buat order untuk mulai chat.' : 'Coba ubah filter atau kata kunci.'}</div>
             </div>
           ) : (
             <div className="divide-y max-h-[70vh] overflow-y-auto">
@@ -175,8 +175,8 @@ export default function Messages() {
           {!active ? (
             <div className="py-16 text-center">
               <div className="w-14 h-14 mx-auto rounded-2xl bg-gray-100 flex items-center justify-center text-gray-400 mb-3"><Icon name="chat" size={24} /></div>
-              <div className="font-bold text-ink text-sm">Pilih percakapan</div>
-              <div className="text-xs text-gray-500 mt-1">Klik salah satu untuk membaca dan membalas.</div>
+              <div className="font-bold text-ink text-sm dark:text-gray-100">Pilih percakapan</div>
+              <div className="text-xs text-gray-500 mt-1 dark:text-gray-400">Klik salah satu untuk membaca dan membalas.</div>
             </div>
           ) : (
             <>
@@ -189,7 +189,7 @@ export default function Messages() {
                   <span className={`absolute bottom-0 right-0 w-3 h-3 rounded-full ring-2 ring-white ${isOnline(partnerOf(active)?.id) ? 'bg-emerald-400' : 'bg-gray-300'}`} title={isOnline(partnerOf(active)?.id) ? 'Online' : 'Offline'}></span>
                 </span>
                 <div className="min-w-0">
-                  <div className="text-sm font-extrabold text-ink truncate">{partnerOf(active)?.full_name || partnerOf(active)?.username}</div>
+                  <div className="text-sm font-extrabold text-ink truncate dark:text-gray-100">{partnerOf(active)?.full_name || partnerOf(active)?.username}</div>
                   <div className={`text-[11px] font-semibold ${isOnline(partnerOf(active)?.id) ? 'text-emerald-600' : 'text-gray-400'}`}>{isOnline(partnerOf(active)?.id) ? 'Online' : 'Offline'} • <Link to={`/gig/${active.gig?.slug}`} className="text-[#0e76f1] hover:underline font-medium">{active.gig?.title || `Order #${active.id}`}</Link></div>
                 </div>
                 <span className="ml-auto w-16 h-12 rounded-lg overflow-hidden bg-gray-100 shrink-0 border">

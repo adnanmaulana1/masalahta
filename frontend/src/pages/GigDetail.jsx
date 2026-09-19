@@ -12,7 +12,7 @@ import { showToast } from '../components/Toast'
 
 function PackageFeature({ children }) {
   return (
-    <li className="flex items-start gap-2.5"><span className="mt-0.5 w-4.5 h-4.5 min-w-[18px] min-h-[18px] rounded-full bg-emerald-100 text-emerald-600 flex items-center justify-center"><Icon name="check" size={11} strokeWidth={3} /></span><span className="text-[13px] text-gray-700">{children}</span></li>
+    <li className="flex items-start gap-2.5"><span className="mt-0.5 w-4.5 h-4.5 min-w-[18px] min-h-[18px] rounded-full bg-emerald-100 dark:bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 flex items-center justify-center"><Icon name="check" size={11} strokeWidth={3} /></span><span className="text-[13px] text-gray-700 dark:text-slate-300">{children}</span></li>
   )
 }
 
@@ -104,7 +104,7 @@ export default function GigDetail() {
         <Icon name="chevRight" size={12} />
         <Link to="/explore" className="hover:text-[#0e76f1]">Jasa</Link>
         <Icon name="chevRight" size={12} />
-        <span className="text-gray-600 font-medium">{gig.category?.name}</span>
+        <span className="text-gray-600 font-medium dark:text-gray-400">{gig.category?.name}</span>
       </nav>
 
       <div className="grid lg:grid-cols-[1fr_400px] gap-6 items-start">
@@ -117,19 +117,30 @@ export default function GigDetail() {
               <span className="tag !py-1.5 text-[11px]">{gig.category?.icon} {gig.category?.name}</span>
               <span className="tag !py-1.5 text-[11px]"><Icon name="eye" size={12} /> {gig.view_count?.toLocaleString('id-ID')} dilihat</span>
             </div>
-            <h1 className="text-lg md:text-[22px] font-extrabold text-ink leading-snug mt-3">{gig.title}</h1>
+            <h1 className="text-lg md:text-[22px] font-extrabold text-ink leading-snug mt-3 dark:text-slate-200">{gig.title}</h1>
             <div className="flex flex-wrap items-center gap-x-4 gap-y-2 mt-4">
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-2 min-w-0">
                 <Avatar src={seller.avatar} username={seller.username} size={38} />
-                <div>
-                  <div className="flex items-center gap-1 text-sm font-bold text-ink">{seller.full_name || seller.username} <Icon name="verified" size={15} className="text-[#0e76f1]" /></div>
-                  <div className="text-[11px] text-gray-400">@{seller.username} • {seller.location}</div>
+                <div className="min-w-0">
+                  <div className="flex items-center gap-1 text-sm font-bold text-ink dark:text-slate-300 min-w-0">
+                    <span className="truncate">{seller.full_name || seller.username}</span>
+                    <Icon name="verified" size={15} className="text-[#0e76f1] dark:text-blue-400 shrink-0" />
+                  </div>
+                  <div className="flex items-center gap-1.5 mt-0.5 text-[11px] text-gray-400 dark:text-gray-500 font-medium min-w-0">
+                    <span className="truncate">@{seller.username}</span>
+                    {seller.location && (
+                      <>
+                        <span className="w-0.5 h-0.5 rounded-full bg-gray-300 dark:bg-white/20 shrink-0" aria-hidden="true"></span>
+                        <span className="inline-flex items-center gap-1 truncate"><Icon name="mapPin" size={11} className="shrink-0" />{seller.location}</span>
+                      </>
+                    )}
+                  </div>
                 </div>
               </div>
               <div className="ml-auto flex items-center gap-1.5 text-sm">
                 <Stars rating={gig.rating} size={16} />
-                <span className="font-extrabold text-ink">{Number(gig.rating).toFixed(1)}</span>
-                <span className="text-gray-400">({gig.review_count} ulasan)</span>
+                <span className="font-semibold text-ink dark:text-slate-300 tabular-nums">{Number(gig.rating).toFixed(1)}</span>
+                <span className="text-gray-400 dark:text-gray-500">({gig.review_count} ulasan)</span>
               </div>
             </div>
           </div>
@@ -137,7 +148,7 @@ export default function GigDetail() {
           {/* gallery - swipeable on mobile */}
           <div className="mt-4 card overflow-hidden">
             <div
-              className="relative bg-gray-100 overflow-hidden touch-pan-y"
+              className="relative bg-gray-100 dark:bg-white/5 overflow-hidden touch-pan-y"
               onTouchStart={e => (e.currentTarget._sx = e.touches[0].clientX)}
               onTouchEnd={e => {
                 const sx = e.currentTarget._sx
@@ -180,7 +191,7 @@ export default function GigDetail() {
               {images.length > 1 && <span className="absolute bottom-3 right-3 sm:hidden bg-black/55 backdrop-blur text-white text-[11px] font-bold px-2 py-1 rounded-full">{activeImg + 1} / {images.length}</span>}
             </div>
             {images.length > 1 && (
-              <div className="hidden sm:flex gap-2 p-3 overflow-x-auto no-scrollbar bg-white">
+              <div className="hidden sm:flex gap-2 p-3 overflow-x-auto no-scrollbar bg-white dark:bg-slate-900">
                 {images.map((img, i) => (
                   <button key={i} onClick={() => setActiveImg(i)} className={`relative shrink-0 w-24 aspect-[16/9] rounded-lg overflow-hidden transition-all ${activeImg === i ? 'ring-2 ring-[#0e76f1] ring-offset-1' : 'opacity-70 hover:opacity-100'}`}>
                     <img src={img} alt="" className="w-full h-full object-cover" loading="lazy" />
@@ -192,15 +203,15 @@ export default function GigDetail() {
 
           {/* about */}
           <div className="mt-4 card p-5 md:p-6">
-            <h3 className="font-extrabold text-ink mb-3 flex items-center gap-2"><Icon name="info" size={18} className="text-[#0e76f1]" /> Tentang Jasa Ini</h3>
-            <p className="text-sm text-gray-600 leading-relaxed whitespace-pre-wrap">{gig.description}</p>
+            <h3 className="font-extrabold text-ink mb-3 flex items-center gap-2 dark:text-slate-300"><Icon name="info" size={18} className="text-[#0e76f1] dark:text-blue-400" /> Tentang Jasa Ini</h3>
+            <p className="text-sm text-gray-600 leading-relaxed whitespace-pre-wrap dark:text-gray-400">{gig.description}</p>
 
-            {isPackage && pkg && (<><h3 className="font-extrabold text-ink mt-6 mb-3 flex items-center gap-2"><Icon name="check" size={18} className="text-emerald-500" /> Apa yang kamu dapatkan?</h3>{(() => { try { const f = JSON.parse(pkg?.features || '[]'); return <ul className="grid sm:grid-cols-2 gap-2">{f.map((x, i) => <PackageFeature key={i}>{x}</PackageFeature>)}</ul> } catch { return null } })()}</>)}
-            {!isPackage && <p className="mt-4 text-sm text-gray-500 bg-gray-50 rounded-xl px-4 py-3 border">{isCustom ? 'Harga menyesuaikan kebutuhan — chat dulu untuk penawaran.' : `Harga ${formatIDR(gig.base_price)} ${gig.unit || ''}`}</p>}
+            {isPackage && pkg && (<><h3 className="font-extrabold text-ink mt-6 mb-3 flex items-center gap-2 dark:text-slate-300"><Icon name="check" size={18} className="text-emerald-500 dark:text-emerald-400" /> Apa yang kamu dapatkan?</h3>{(() => { try { const f = JSON.parse(pkg?.features || '[]'); return <ul className="grid sm:grid-cols-2 gap-2">{f.map((x, i) => <PackageFeature key={i}>{x}</PackageFeature>)}</ul> } catch { return null } })()}</>)}
+            {!isPackage && <p className="mt-4 text-sm text-gray-500 bg-gray-50 rounded-xl px-4 py-3 border dark:bg-white/5 dark:text-gray-400">{isCustom ? 'Harga menyesuaikan kebutuhan — chat dulu untuk penawaran.' : `Harga ${formatIDR(gig.base_price)} ${gig.unit || ''}`}</p>}
           </div>
 
           {/* seller card */}
-          <div className="mt-4 rounded-3xl border border-gray-200/70 bg-gradient-to-b from-[#f5f9ff] via-white to-white shadow-[0_20px_50px_-24px_rgba(14,118,241,0.35)] overflow-hidden">
+          <div className="mt-4 rounded-3xl border border-black/[0.06] dark:border-white/[0.06] bg-gradient-to-b from-[#f5f9ff] via-white to-white dark:from-slate-900 dark:via-slate-900 dark:to-slate-900 overflow-hidden">
             <div className="p-5 md:p-6">
               <div className="flex items-center justify-end gap-2">
                 <span className="inline-flex items-center gap-1.5 text-[11px] text-gray-400 font-medium"><Icon name="calendar" size={12} /> Sejak {seller.created_at ? new Date(seller.created_at).getFullYear() : '—'}</span>
@@ -208,39 +219,47 @@ export default function GigDetail() {
               <div className="flex items-center gap-4 mt-5">
                 <div className="relative shrink-0">
                   <div className="rounded-full p-[3px] bg-gradient-to-br from-[#0e76f1] via-[#6a3cff] to-emerald-400 shadow-lg shadow-blue-500/25">
-                    <Avatar src={seller.avatar} username={seller.username} size={64} className="ring-[3px] ring-white" />
+                    <Avatar src={seller.avatar} username={seller.username} size={64} className="ring-[3px] ring-white dark:ring-slate-800" />
                   </div>
-                  <span className={`absolute bottom-1 right-1 w-4 h-4 rounded-full ring-[3px] ring-white ${isOnline(seller.id) ? 'bg-emerald-400' : 'bg-gray-300'}`} title={isOnline(seller.id) ? 'Online' : 'Offline'}></span>
+                  <span className={`absolute bottom-1 right-1 w-4 h-4 rounded-full ring-[3px] ring-white dark:ring-slate-800 ${isOnline(seller.id) ? 'bg-emerald-400' : 'bg-gray-300'}`} title={isOnline(seller.id) ? 'Online' : 'Offline'}></span>
                 </div>
                 <div className="flex-1 min-w-0">
-                  <div className="flex items-center gap-1.5">
-                    <span className="font-extrabold text-[18px] text-ink leading-tight truncate tracking-tight">{seller.full_name || seller.username}</span>
-                    <Icon name="verified" size={17} className="text-[#0e76f1] shrink-0" />
+                  <div className="flex items-center gap-1.5 min-w-0">
+                    <span className="font-extrabold text-[18px] text-ink leading-tight truncate tracking-tight dark:text-slate-200">{seller.full_name || seller.username}</span>
+                    <Icon name="verified" size={17} className="text-[#0e76f1] dark:text-blue-400 shrink-0" />
                   </div>
-                  <div className="text-xs text-gray-400 mt-1 truncate font-medium">@{seller.username}{seller.location ? ` • ${seller.location}` : ''}</div>
-                  <div className="mt-2 inline-flex items-center gap-1.5 rounded-full bg-amber-50 border border-amber-100 px-2.5 py-1">
+                  <div className="flex items-center gap-1.5 mt-1 text-xs text-gray-400 dark:text-gray-500 font-medium min-w-0">
+                    <span className="truncate">@{seller.username}</span>
+                    {seller.location && (
+                      <>
+                        <span className="w-0.5 h-0.5 rounded-full bg-gray-300 dark:bg-white/20 shrink-0" aria-hidden="true"></span>
+                        <span className="inline-flex items-center gap-1 truncate"><Icon name="mapPin" size={12} className="shrink-0" />{seller.location}</span>
+                      </>
+                    )}
+                  </div>
+                  <div className="mt-2 inline-flex items-center gap-1.5 rounded-full bg-amber-50 dark:bg-amber-500/10 border border-amber-100 dark:border-amber-500/20 px-2.5 py-1">
                     <Stars rating={Number(seller.rating || gig.rating)} size={12} />
-                    <span className="text-[13px] font-extrabold text-ink">{Number(seller.rating || gig.rating).toFixed(1)}</span>
-                    <span className="text-[11px] text-gray-400 font-medium">({seller.review_count || gig.review_count})</span>
+                    <span className="text-[13px] font-semibold text-ink dark:text-slate-300 tabular-nums">{Number(seller.rating || gig.rating).toFixed(1)}</span>
+                    <span className="text-[11px] text-gray-400 dark:text-gray-500 font-medium">({seller.review_count || gig.review_count})</span>
                   </div>
                 </div>
               </div>
               <div className="mt-5 grid grid-cols-3 gap-2">
                 {[
-                  { n: Number(seller.rating || gig.rating).toFixed(1), l: 'Rating', icon: 'starFill', c: 'bg-amber-50 text-amber-500' },
-                  { n: seller.review_count || gig.review_count, l: 'Ulasan', icon: 'chat', c: 'bg-blue-50 text-[#0e76f1]' },
-                  { n: seller.completed_jobs || 0, l: 'Project', icon: 'briefcase', c: 'bg-emerald-50 text-emerald-600' },
+                  { n: Number(seller.rating || gig.rating).toFixed(1), l: 'Rating', icon: 'starFill', c: 'bg-amber-50 text-amber-500 dark:bg-amber-500/10 dark:text-[#c99a3f]' },
+                  { n: seller.review_count || gig.review_count, l: 'Ulasan', icon: 'chat', c: 'bg-blue-50 text-[#0e76f1] dark:bg-blue-500/10 dark:text-blue-400' },
+                  { n: seller.completed_jobs || 0, l: 'Project', icon: 'briefcase', c: 'bg-emerald-50 text-emerald-600 dark:bg-emerald-500/10 dark:text-emerald-400' },
                 ].map(s => (
-                  <div key={s.l} className="group rounded-2xl bg-white border border-gray-200/70 px-2 py-3 text-center shadow-sm hover:-translate-y-0.5 hover:shadow-md hover:border-blue-200 transition-all">
+                  <div key={s.l} className="group rounded-2xl bg-white border border-black/[0.06] dark:border-white/[0.06] px-2 py-3 text-center shadow-sm hover:-translate-y-0.5 hover:shadow-md hover:border-blue-200 transition-all dark:bg-slate-800">
                     <span className={`w-8 h-8 rounded-xl ${s.c} inline-flex items-center justify-center transition-transform group-hover:scale-110`}><Icon name={s.icon} size={15} /></span>
-                    <div className="font-extrabold text-[16px] text-ink leading-none mt-2 tabular-nums">{s.n}</div>
-                    <div className="text-[10.5px] text-gray-400 mt-1 leading-tight font-medium">{s.l}</div>
+                    <div className="font-semibold text-[16px] text-ink leading-none mt-2 tabular-nums dark:text-slate-300">{s.n}</div>
+                    <div className="text-[10.5px] text-gray-400 dark:text-gray-500 mt-1 leading-tight font-medium">{s.l}</div>
                   </div>
                 ))}
               </div>
-              <div className="mt-4 rounded-2xl bg-gray-50/80 border border-gray-100 p-4">
-                <h3 className="font-extrabold text-ink text-sm">Tentang Saya</h3>
-                <p className="text-[13px] text-gray-600 leading-relaxed mt-1">{seller.bio || 'Freelancer profesional siap membantu project kamu dengan hasil terbaik dan tepat waktu.'}</p>
+              <div className="mt-4 rounded-2xl bg-gray-50/80 dark:bg-white/5 border border-gray-100 dark:border-white/10 p-4 dark:border-white/10">
+                <h3 className="font-extrabold text-ink text-sm dark:text-slate-300">Tentang Saya</h3>
+                <p className="text-[13px] text-gray-600 leading-relaxed mt-1 dark:text-gray-400">{seller.bio || 'Freelancer profesional siap membantu project kamu dengan hasil terbaik dan tepat waktu.'}</p>
               </div>
               <div className="flex flex-wrap items-center gap-1.5 mt-3.5">
                 <span className="tag !py-1.5 !text-[11px]">{gig.category?.icon} {gig.category?.name}</span>
@@ -254,7 +273,7 @@ export default function GigDetail() {
           {/* reviews */}
           <div className="mt-4 card p-5 md:p-6">
             <div className="flex items-center gap-2 mb-5">
-              <h3 className="font-extrabold text-ink">Ulasan Pembeli</h3>
+              <h3 className="font-extrabold text-ink dark:text-gray-100">Ulasan Pembeli</h3>
               <span className="text-xs text-gray-400">({reviews.length})</span>
             </div>
             {reviews.length === 0 ? (
@@ -266,16 +285,16 @@ export default function GigDetail() {
                     <div className="flex items-center gap-2.5">
                       <Avatar src={r.user?.avatar} username={r.user?.username} size={36} />
                       <div>
-                        <div className="text-sm font-bold text-ink">{r.user?.full_name || r.user?.username}</div>
+                        <div className="text-sm font-bold text-ink dark:text-gray-100">{r.user?.full_name || r.user?.username}</div>
                         <div className="text-[11px] text-gray-400">{relativeTime(r.created_at)}</div>
                       </div>
                     </div>
                     <div className="mt-2 flex items-center gap-2">
                       <Stars rating={r.rating} size={13} />
-                      <span className="text-xs font-semibold text-gray-600">{r.rating}.0</span>
+                      <span className="text-xs font-semibold text-gray-600 dark:text-gray-400">{r.rating}.0</span>
                       <span className="text-[11px] text-emerald-600 font-medium flex items-center gap-1"><Icon name="verified" size={12} /> Pembelian terverifikasi</span>
                     </div>
-                    <p className="text-sm text-gray-600 mt-2 leading-relaxed">{r.comment}</p>
+                    <p className="text-sm text-gray-600 mt-2 leading-relaxed dark:text-gray-400">{r.comment}</p>
                   </div>
                 ))}
               </div>
@@ -284,9 +303,9 @@ export default function GigDetail() {
         </div>
 
         {/* RIGHT - pricing card */}
-        <div id="order-section" className="lg:sticky lg:top-28 bg-white rounded-2xl border border-gray-200 shadow-card overflow-hidden">
+        <div id="order-section" className="lg:sticky lg:top-28 bg-white rounded-2xl border border-gray-200 shadow-card overflow-hidden dark:bg-slate-900 dark:border-white/10">
           <div className="px-5 pt-5 pb-3">
-            <h3 className="font-extrabold text-ink text-[15px] leading-none">{isPackage ? 'Pilih Paket' : isCustom ? 'Harga' : 'Detail Layanan'}</h3>
+            <h3 className="font-extrabold text-ink text-[15px] leading-none dark:text-gray-100">{isPackage ? 'Pilih Paket' : isCustom ? 'Harga' : 'Detail Layanan'}</h3>
             <p className="text-xs text-gray-400 mt-1">{isPackage ? 'Bandingkan dan pilih yang paling sesuai' : isCustom ? 'Hubungi freelancer untuk penawaran' : `${gig.unit || 'Harga tetap'}`}</p>
           </div>
           {isPackage ? (
@@ -300,27 +319,27 @@ export default function GigDetail() {
                 <button
                   key={p.id}
                   onClick={() => { setActivePkg(i); setPopPkg(p.id); setTimeout(() => setPopPkg(null), 350) }}
-                  className={`relative w-full text-left rounded-2xl border-2 p-4 transition-all duration-200 active:scale-[0.98] ${popPkg === p.id ? 'animate-[pkgPop_0.35s_ease]' : ''} ${active ? 'border-[#0e76f1] bg-blue-50/40 shadow-[0_8px_24px_rgba(14,118,241,0.12)] scale-[1.01]' : 'border-gray-100 bg-white hover:border-gray-200 hover:bg-gray-50/60'}`}
+                  className={`relative w-full text-left rounded-2xl border-2 p-4 transition-all duration-200 active:scale-[0.98] ${popPkg === p.id ? 'animate-[pkgPop_0.35s_ease]' : ''} ${active ? 'border-[#0e76f1] bg-blue-50/40 dark:bg-blue-500/10 shadow-[0_8px_24px_rgba(14,118,241,0.12)] scale-[1.01]' : 'border-gray-100 dark:border-white/10 bg-white dark:bg-slate-800 hover:border-gray-200 dark:hover:border-white/20 hover:bg-gray-50/60 dark:hover:bg-slate-700/60'}`}
                 >
-                  {isStandard && <span className="absolute -top-2.5 right-4 text-[9px] font-extrabold bg-gradient-to-r from-[#ff6b00] to-[#ff9f2e] text-white px-2.5 py-0.5 rounded-full shadow-sm">TERLARIS</span>}
+                  {isStandard && <span className="absolute -top-2.5 right-4 text-[9px] font-extrabold bg-gradient-to-r from-[#ff6b00] to-[#ff9f2e] dark:from-[#b34a00] dark:to-[#b06f1f] text-white px-2.5 py-0.5 rounded-full shadow-sm">TERLARIS</span>}
                   <div className="flex items-start justify-between gap-3">
                     <span className="flex items-center gap-2.5 min-w-0">
-                      <span className={`w-5 h-5 rounded-full border-2 flex items-center justify-center shrink-0 transition-all duration-200 ${active ? 'border-[#0e76f1] bg-[#0e76f1] scale-110' : 'border-gray-300 bg-white'}`}>
-                        {active && <span className="w-1.5 h-1.5 rounded-full bg-white block animate-[pkgDot_0.3s_ease]" />}
+                      <span className={`w-5 h-5 rounded-full border-2 flex items-center justify-center shrink-0 transition-all duration-200 ${active ? 'border-[#0e76f1] bg-[#0e76f1] scale-110' : 'border-gray-300 dark:border-white/25 bg-white dark:bg-transparent'}`}>
+                        {active && <span className="w-1.5 h-1.5 rounded-full bg-white block animate-[pkgDot_0.3s_ease] dark:bg-slate-900" />}
                       </span>
-                      <span className={`text-sm font-extrabold truncate ${active ? 'text-[#0e76f1]' : 'text-ink'}`}>{p.name}</span>
+                      <span className={`text-sm font-bold truncate ${active ? 'text-[#0e76f1] dark:text-blue-400' : 'text-ink dark:text-slate-300'}`}>{p.name}</span>
                     </span>
-                    <span className="font-extrabold text-[15px] text-ink leading-none shrink-0">{formatIDR(p.price)}</span>
+                    <span className="font-bold text-[15px] text-ink leading-none shrink-0 dark:text-slate-300">{formatIDR(p.price)}</span>
                   </div>
-                  <p className="text-xs text-gray-500 mt-2 leading-relaxed line-clamp-2 pr-1">{p.description}</p>
+                  <p className="text-xs text-gray-500 mt-2 leading-relaxed line-clamp-2 pr-1 dark:text-slate-400">{p.description}</p>
                   <div className="flex items-center gap-2 mt-3">
-                    <span className="inline-flex items-center gap-1.5 bg-white border rounded-full px-2.5 py-1 text-[11px] font-medium text-gray-600"><Icon name="clock" size={12} className="text-amber-500" /> {p.delivery_days} hari</span>
-                    <span className="inline-flex items-center gap-1.5 bg-white border rounded-full px-2.5 py-1 text-[11px] font-medium text-gray-600"><Icon name="edit" size={12} className="text-violet-500" /> {p.revisions} revisi</span>
+                    <span className="inline-flex items-center gap-1.5 bg-white border border-gray-100 dark:bg-white/5 dark:border-white/10 rounded-full px-2.5 py-1 text-[11px] font-medium text-gray-600 dark:text-slate-400"><Icon name="clock" size={12} className="text-amber-500 dark:text-[#c99a3f]" /> {p.delivery_days} hari</span>
+                    <span className="inline-flex items-center gap-1.5 bg-white border border-gray-100 dark:bg-white/5 dark:border-white/10 rounded-full px-2.5 py-1 text-[11px] font-medium text-gray-600 dark:text-slate-400"><Icon name="edit" size={12} className="text-violet-500 dark:text-violet-400" /> {p.revisions} revisi</span>
                   </div>
                   {active && features.length > 0 && (
                     <ul className="mt-3 pt-3 border-t border-blue-100 space-y-1.5 text-left animate-[pkgReveal_0.3s_ease]">
                       {features.map((x, idx) => (
-                        <li key={idx} className="flex items-start gap-2 text-xs text-gray-700 leading-relaxed" style={{ animationDelay: `${idx * 40}ms` }}>
+                        <li key={idx} className="flex items-start gap-2 text-xs text-gray-700 leading-relaxed dark:text-gray-100" style={{ animationDelay: `${idx * 40}ms` }}>
                           <span className="mt-0.5 w-4 h-4 rounded-full bg-[#0e76f1]/10 flex items-center justify-center shrink-0"><Icon name="check" size={10} strokeWidth={3} className="text-[#0e76f1]" /></span>
                           <span>{x}</span>
                         </li>
@@ -344,7 +363,7 @@ export default function GigDetail() {
 
           <div className="px-5 pb-5">
             <label className="block">
-              <span className="text-xs font-bold text-gray-700 uppercase tracking-wide mb-1.5 block">Tulis brief / catatan <span className="font-normal normal-case text-gray-400">(opsional)</span></span>
+              <span className="text-xs font-bold text-gray-700 uppercase tracking-wide mb-1.5 block dark:text-gray-100">Tulis brief / catatan <span className="font-normal normal-case text-gray-400">(opsional)</span></span>
               <textarea
                 value={note} onChange={e => setNote(e.target.value)}
                 placeholder="Ceritakan kebutuhan project kamu di sini..."
@@ -356,10 +375,10 @@ export default function GigDetail() {
               {ordering ? <><span className="inline-block w-4 h-4 border-2 border-white/40 border-t-white rounded-full animate-spin"></span> Memproses...</> : isCustom ? <><Icon name="chat" size={17} /> Konsultasi & Nego</> : <>Pesan Sekarang — {formatIDR(isPackage ? pkg?.price : gig.base_price)} <Icon name="arrowRight" size={17} /></>}
             </button>
 
-            <div className="mt-3 grid grid-cols-3 gap-2 text-center text-[11px] font-semibold text-gray-500">
-              <span className="flex flex-col items-center gap-1 py-2.5 rounded-xl bg-gray-50 border"><Icon name="shield" size={16} className="text-[#0e76f1]" /> Dana Aman</span>
-              <span className="flex flex-col items-center gap-1 py-2.5 rounded-xl bg-gray-50 border"><Icon name="chat" size={16} className="text-[#6a3cff]" /> Bebas Chat</span>
-              <span className="flex flex-col items-center gap-1 py-2.5 rounded-xl bg-gray-50 border"><Icon name="sparkles" size={16} className="text-amber-500" /> Garansi</span>
+            <div className="mt-3 grid grid-cols-3 gap-2 text-center text-[11px] font-semibold text-gray-500 dark:text-gray-400">
+              <span className="flex flex-col items-center gap-1 py-2.5 rounded-xl bg-gray-50 border border-gray-100 dark:bg-white/5 dark:border-white/10"><Icon name="shield" size={16} className="text-[#0e76f1] dark:text-blue-400" /> Dana Aman</span>
+              <span className="flex flex-col items-center gap-1 py-2.5 rounded-xl bg-gray-50 border border-gray-100 dark:bg-white/5 dark:border-white/10"><Icon name="chat" size={16} className="text-[#6a3cff] dark:text-violet-400" /> Bebas Chat</span>
+              <span className="flex flex-col items-center gap-1 py-2.5 rounded-xl bg-gray-50 border border-gray-100 dark:bg-white/5 dark:border-white/10"><Icon name="sparkles" size={16} className="text-amber-500 dark:text-[#c99a3f]" /> Garansi</span>
             </div>
           </div>
         </div>

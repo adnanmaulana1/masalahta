@@ -50,15 +50,15 @@ function AuthLayout({ children }) {
         {/* ikon melayang di kiri foto model (desktop saja) */}
         <div className="hidden lg:flex absolute z-20 blur-[0.5px] left-[24%] top-[18%] ml-[45px] mt-[100px] items-center gap-2 rounded-2xl bg-white/90 backdrop-blur px-3 py-2 shadow-xl pointer-events-none animate-float" style={{ animationDelay: '0s' }}>
           <span className="w-8 h-8 rounded-xl bg-emerald-100 text-emerald-600 flex items-center justify-center"><Icon name="shield" size={17} /></span>
-          <span className="text-xs font-bold text-gray-800">Escrow<br /><span className="font-medium text-gray-500">100% Aman</span></span>
+          <span className="text-xs font-bold text-gray-800 dark:text-gray-100">Escrow<br /><span className="font-medium text-gray-500 dark:text-gray-400">100% Aman</span></span>
         </div>
         <div className="hidden lg:flex absolute z-40 left-[54%] top-[26%] -ml-[80px] mt-[120px] items-center gap-2 rounded-2xl bg-white/90 backdrop-blur px-3 py-2 shadow-[0_20px_45px_rgba(0,0,0,0.35)] ring-1 ring-black/5 pointer-events-none animate-float" style={{ animationDelay: '0.9s' }}>
           <span className="w-8 h-8 rounded-xl bg-amber-100 text-amber-500 flex items-center justify-center"><Icon name="star" size={17} /></span>
-          <span className="text-xs font-bold text-gray-800">4,9/5<br /><span className="font-medium text-gray-500">Rating</span></span>
+          <span className="text-xs font-bold text-gray-800 dark:text-gray-100">4,9/5<br /><span className="font-medium text-gray-500 dark:text-gray-400">Rating</span></span>
         </div>
         <div className="hidden lg:flex absolute z-40 left-[34%] top-[64%] -ml-[24px] mt-[24px] items-center gap-2 rounded-2xl bg-white/90 backdrop-blur px-3 py-2 shadow-xl pointer-events-none animate-float" style={{ animationDelay: '1.8s' }}>
           <span className="w-8 h-8 rounded-xl bg-blue-100 text-[#0e76f1] flex items-center justify-center"><Icon name="verified" size={17} /></span>
-          <span className="text-xs font-bold text-gray-800">100rb+<br /><span className="font-medium text-gray-500">Freelancer</span></span>
+          <span className="text-xs font-bold text-gray-800 dark:text-gray-100">100rb+<br /><span className="font-medium text-gray-500 dark:text-gray-400">Freelancer</span></span>
         </div>
     </div>
   )
@@ -88,13 +88,13 @@ export default function Login() {
 
   return (
     <AuthLayout>
-      <div className="bg-white rounded-2xl border shadow-card p-7">
-        <h1 className="text-xl font-extrabold text-ink">Masuk</h1>
-        <p className="text-sm text-gray-500 mt-1">Lanjutkan petualanganmu bersama freelancer terbaik</p>
+      <div className="bg-white rounded-2xl border shadow-card p-7 dark:bg-slate-900">
+        <h1 className="text-xl font-extrabold text-ink dark:text-gray-100">Masuk</h1>
+        <p className="text-sm text-gray-500 mt-1 dark:text-gray-400">Lanjutkan petualanganmu bersama freelancer terbaik</p>
 
         <form onSubmit={submit} className="mt-6 space-y-4">
           <div>
-            <label className="text-xs font-bold text-gray-700 uppercase tracking-wide mb-1.5 block">Email</label>
+            <label className="text-xs font-bold text-gray-700 uppercase tracking-wide mb-1.5 block dark:text-gray-100">Email</label>
             <div className="relative">
               <Icon name="mail" size={17} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400" />
               <input type="email" required value={form.email} onChange={e => setForm({ ...form, email: e.target.value })} placeholder="nama@email.com" className="input-field !pl-10" />
@@ -102,7 +102,7 @@ export default function Login() {
           </div>
           <div>
             <div className="flex items-center justify-between mb-1.5">
-              <label className="text-xs font-bold text-gray-700 uppercase tracking-wide">Password</label>
+              <label className="text-xs font-bold text-gray-700 uppercase tracking-wide dark:text-gray-100">Password</label>
               <Link to="/forgot-password" className="text-xs font-semibold text-[#0e76f1] hover:underline">Lupa password?</Link>
             </div>
             <div className="relative">
@@ -121,7 +121,7 @@ export default function Login() {
 
         {/* demo accounts disabled */}
 
-        <p className="text-sm text-center mt-6 text-gray-500">Belum punya akun? <Link to="/register" className="font-bold text-[#0e76f1] hover:underline">Daftar gratis</Link></p>
+        <p className="text-sm text-center mt-6 text-gray-500 dark:text-gray-400">Belum punya akun? <Link to="/register" className="font-bold text-[#0e76f1] hover:underline">Daftar gratis</Link></p>
       </div>
     </AuthLayout>
   )

@@ -10,7 +10,7 @@ export default function Stars({ rating = 0, size = 14, total = 5 }) {
           name="starFill"
           size={size}
           align="h"
-          className={i < rounded ? 'text-amber-400' : 'text-gray-300'}
+          className={i < rounded ? 'text-amber-400 dark:text-[#c99a3f]' : 'text-gray-300 dark:text-white/15'}
           fill="currentColor"
           strokeWidth={0}
         />

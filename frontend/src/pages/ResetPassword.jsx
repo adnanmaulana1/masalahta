@@ -32,10 +32,10 @@ export default function ResetPassword() {
   if (!token) {
     return (
       <div className="min-h-screen flex items-center justify-center px-4 bg-gradient-to-b from-gray-50 to-gray-100">
-        <div className="w-full max-w-md bg-white rounded-2xl border shadow-card p-6 text-center fade-up">
+        <div className="w-full max-w-md bg-white rounded-2xl border shadow-card p-6 text-center fade-up dark:bg-slate-900">
           <div className="w-12 h-12 rounded-full bg-red-50 text-red-500 flex items-center justify-center mx-auto"><Icon name="x" size={22} /></div>
-          <h1 className="text-lg font-extrabold text-ink mt-3">Link tidak valid</h1>
-          <p className="text-sm text-gray-500 mt-1">Link reset harus dibuka dari email yang kami kirim.</p>
+          <h1 className="text-lg font-extrabold text-ink mt-3 dark:text-gray-100">Link tidak valid</h1>
+          <p className="text-sm text-gray-500 mt-1 dark:text-gray-400">Link reset harus dibuka dari email yang kami kirim.</p>
           <Link to="/forgot-password" className="btn-primary w-full mt-5">Minta link baru</Link>
         </div>
       </div>
@@ -45,21 +45,21 @@ export default function ResetPassword() {
   return (
     <div className="min-h-screen flex items-center justify-center px-4 py-10 bg-gradient-to-b from-gray-50 to-gray-100">
       <div className="w-full max-w-md fade-up">
-        <div className="bg-white rounded-2xl border border-gray-200/80 shadow-[0_20px_60px_-20px_rgba(11,95,208,0.25)] p-6">
-          <h1 className="text-xl font-extrabold text-ink tracking-tight">Buat password baru</h1>
+        <div className="bg-white rounded-2xl border border-gray-200/80 shadow-[0_20px_60px_-20px_rgba(11,95,208,0.25)] p-6 dark:bg-slate-900">
+          <h1 className="text-xl font-extrabold text-ink tracking-tight dark:text-gray-100">Buat password baru</h1>
           {done ? (
             <div className="mt-5 text-center">
               <div className="w-12 h-12 rounded-full bg-emerald-50 text-emerald-500 flex items-center justify-center mx-auto"><Icon name="check" size={22} strokeWidth={3} /></div>
-              <p className="text-sm font-bold text-gray-800 mt-3">Password berhasil direset!</p>
-              <p className="text-[13px] text-gray-500 mt-1">Mengalihkan ke halaman masuk…</p>
+              <p className="text-sm font-bold text-gray-800 mt-3 dark:text-gray-100">Password berhasil direset!</p>
+              <p className="text-[13px] text-gray-500 mt-1 dark:text-gray-400">Mengalihkan ke halaman masuk…</p>
               <Link to="/login" className="btn-primary w-full mt-5">Masuk sekarang</Link>
             </div>
           ) : (
             <>
-              <p className="text-[13px] text-gray-500 mt-1">Minimal 6 karakter, bedakan dari password lama.</p>
+              <p className="text-[13px] text-gray-500 mt-1 dark:text-gray-400">Minimal 6 karakter, bedakan dari password lama.</p>
               <form onSubmit={submit} className="mt-5 space-y-3">
                 <div>
-                  <label className="text-[11px] font-bold text-gray-600 uppercase tracking-wide mb-1.5 block">Password baru</label>
+                  <label className="text-[11px] font-bold text-gray-600 uppercase tracking-wide mb-1.5 block dark:text-gray-400">Password baru</label>
                   <div className="relative">
                     <Icon name="lock" size={16} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" />
                     <input type={showPw ? 'text' : 'password'} required minLength={6} value={pw} onChange={e => setPw(e.target.value)} placeholder="Min. 6 karakter" className="input-field !pl-10 !pr-11" />
@@ -67,7 +67,7 @@ export default function ResetPassword() {
                   </div>
                 </div>
                 <div>
-                  <label className="text-[11px] font-bold text-gray-600 uppercase tracking-wide mb-1.5 block">Konfirmasi password</label>
+                  <label className="text-[11px] font-bold text-gray-600 uppercase tracking-wide mb-1.5 block dark:text-gray-400">Konfirmasi password</label>
                   <div className="relative">
                     <Icon name="lock" size={16} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" />
                     <input type={showPw ? 'text' : 'password'} required minLength={6} value={pw2} onChange={e => setPw2(e.target.value)} placeholder="Ulangi password baru" className="input-field !pl-10" />

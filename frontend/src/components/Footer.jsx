@@ -64,7 +64,7 @@ export default function Footer() {
         ))}
       </div>
       <div className="border-t border-white/10">
-        <div className="max-w-[1240px] mx-auto px-4 py-4 flex flex-wrap items-center justify-between gap-3 text-xs text-gray-500">
+        <div className="max-w-[1240px] mx-auto px-4 py-4 flex flex-wrap items-center justify-between gap-3 text-xs text-gray-500 dark:text-gray-400">
           <span>© 2026 masalahta.id. Semua hak dilindungi.</span>
           <span className="flex items-center gap-1.5"><span className="w-1.5 h-1.5 rounded-full bg-emerald-400 inline-block"></span> Semua sistem berjalan normal</span>
         </div>

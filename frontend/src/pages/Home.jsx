@@ -63,21 +63,21 @@ function TestimonialCarousel() {
         </div>
         <div key={idx} className={dir === 1 ? 'slide-up' : 'slide-down'}>
           <div className="flex justify-center"><Stars rating={5} size={18} /></div>
-          <p className="text-base sm:text-lg text-gray-700 leading-relaxed mt-4 font-medium">“{t.txt}”</p>
+          <p className="text-base sm:text-lg text-gray-700 leading-relaxed mt-4 font-medium dark:text-gray-100">“{t.txt}”</p>
           <div className="flex items-center justify-center gap-3 mt-6">
             <div className="rounded-full p-0.5 bg-gradient-to-br from-amber-500 to-orange-500">
               <img src={t.av} alt={t.name} className="w-12 h-12 rounded-full object-cover ring-2 ring-white" loading="lazy" />
             </div>
             <div className="text-left">
-              <div className="text-sm font-bold text-ink flex items-center gap-1.5">{t.name} <Icon name="verified" size={15} className="text-[#0e76f1]" /></div>
-              <div className="text-xs text-gray-500">{t.role}</div>
+              <div className="text-sm font-bold text-ink flex items-center gap-1.5 dark:text-gray-100">{t.name} <Icon name="verified" size={15} className="text-[#0e76f1]" /></div>
+              <div className="text-xs text-gray-500 dark:text-gray-400">{t.role}</div>
             </div>
           </div>
         </div>
-        <button onClick={() => go(-1)} aria-label="Testimoni sebelumnya" className="absolute left-3 top-1/2 -translate-y-1/2 w-9 h-9 rounded-full bg-white border shadow-sm flex items-center justify-center text-gray-500 hover:text-[#0e76f1] hover:border-[#0e76f1] hover:scale-105 active:scale-95 transition-all">
+        <button onClick={() => go(-1)} aria-label="Testimoni sebelumnya" className="absolute left-3 top-1/2 -translate-y-1/2 w-9 h-9 rounded-full bg-white border shadow-sm flex items-center justify-center text-gray-500 hover:text-[#0e76f1] hover:border-[#0e76f1] hover:scale-105 active:scale-95 transition-all dark:bg-slate-900 dark:text-gray-400">
           <Icon name="chevRight" size={18} className="rotate-180" />
         </button>
-        <button onClick={() => go(1)} aria-label="Testimoni berikutnya" className="absolute right-3 top-1/2 -translate-y-1/2 w-9 h-9 rounded-full bg-white border shadow-sm flex items-center justify-center text-gray-500 hover:text-[#0e76f1] hover:border-[#0e76f1] hover:scale-105 active:scale-95 transition-all">
+        <button onClick={() => go(1)} aria-label="Testimoni berikutnya" className="absolute right-3 top-1/2 -translate-y-1/2 w-9 h-9 rounded-full bg-white border shadow-sm flex items-center justify-center text-gray-500 hover:text-[#0e76f1] hover:border-[#0e76f1] hover:scale-105 active:scale-95 transition-all dark:bg-slate-900 dark:text-gray-400">
           <Icon name="chevRight" size={18} />
         </button>
       </div>
@@ -139,13 +139,13 @@ function SearchSuggest() {
 
   return (
     <div className="relative max-w-[560px] mx-auto">
-      <form onSubmit={submit} className="relative flex items-center bg-white rounded-2xl p-2 shadow-2xl shadow-blue-950/30 ring-1 ring-white/30">
-        <Icon name="search" size={20} className="text-[#0e76f1] mx-3 shrink-0" />
+      <form onSubmit={submit} className="relative flex items-center bg-white rounded-2xl p-2 shadow-2xl shadow-blue-950/30 ring-1 ring-white/30 dark:bg-slate-800 dark:ring-white/10 dark:shadow-black/40">
+        <Icon name="search" size={20} className="text-[#0e76f1] dark:text-blue-400 mx-3 shrink-0" />
         <div className="relative flex-1 min-w-0">
           <input
             value={q} onChange={e => setQ(e.target.value)} onFocus={() => suggest.length && setOpen(true)}
             placeholder="Cari jasa"
-            className="relative w-full bg-transparent outline-none text-[15px] text-ink placeholder:text-gray-400 py-1"
+            className="relative w-full bg-transparent outline-none text-[15px] text-ink placeholder:text-gray-400 dark:placeholder-gray-500 py-1 dark:text-slate-200"
           />
           {!q && (
             <span className="pointer-events-none absolute inset-0 flex items-center overflow-hidden text-[15px] text-gray-400 whitespace-nowrap">
@@ -155,17 +155,17 @@ function SearchSuggest() {
             </span>
           )}
         </div>
-        {q && <button type="button" onClick={() => { setQ(''); setSuggest([]) }} className="p-1 mr-1 text-gray-400 hover:text-gray-600"><Icon name="x" size={16} /></button>}
-        <button type="submit" className="bg-gradient-to-r from-[#0e76f1] to-[#0b5fd0] hover:from-[#0b5fd0] hover:to-[#0a52b8] text-white rounded-xl px-6 py-2.5 text-sm font-bold transition-all shrink-0">
+        {q && <button type="button" onClick={() => { setQ(''); setSuggest([]) }} className="p-1 mr-1 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"><Icon name="x" size={16} /></button>}
+        <button type="submit" className="bg-gradient-to-r from-[#0e76f1] to-[#0b5fd0] hover:from-[#0b5fd0] hover:to-[#0a52b8] dark:from-[#155aab] dark:to-[#123f7a] dark:hover:from-[#155aab] dark:hover:to-[#123f7a] text-white rounded-xl px-6 py-2.5 text-sm font-bold transition-all shrink-0">
           Cari
         </button>
       </form>
       {open && suggest.length > 0 && (
-        <div className="absolute top-full mt-2 w-full bg-white rounded-2xl border shadow-lift overflow-hidden fade-up text-left z-50">
+        <div className="absolute top-full mt-2 w-full bg-white rounded-2xl border shadow-lift overflow-hidden fade-up text-left z-50 dark:bg-slate-900">
           <div className="px-4 pt-3 pb-1 text-[11px] font-bold uppercase tracking-wide text-gray-400">Saran pencarian</div>
           {suggest.map((s, i) => (
             <button key={i} type="button" onClick={() => { setQ(s); setOpen(false); navigate(`/explore?q=${encodeURIComponent(s)}`) }}
-                    className="w-full text-left px-4 py-2.5 flex items-center gap-3 text-sm text-gray-700 hover:bg-blue-50">
+                    className="w-full text-left px-4 py-2.5 flex items-center gap-3 text-sm text-gray-700 hover:bg-blue-50 dark:text-gray-100">
               <Icon name="search" size={16} className="text-gray-400" /> <span className="truncate">{s}</span>
             </button>
           ))}
@@ -216,8 +216,8 @@ function Stat({ target, l, format = compactID, prefix = '', suffix = '' }) {
   const display = isRating ? val.toFixed(1).replace('.', ',') : format(val)
   return (
     <div ref={ref} className="md:px-2">
-      <div className="text-[22px] sm:text-2xl md:text-[28px] font-extrabold tracking-tight tabular-nums text-white leading-none">{prefix}{display}{suffix}</div>
-      <div className="text-[11px] sm:text-xs font-semibold text-blue-100/90 mt-2">{l}</div>
+      <div className="text-[22px] sm:text-2xl md:text-[28px] font-extrabold tracking-tight tabular-nums text-white dark:text-slate-200 leading-none">{prefix}{display}{suffix}</div>
+      <div className="text-[11px] sm:text-xs font-semibold text-blue-100/90 dark:text-slate-400 mt-2">{l}</div>
     </div>
   )
 }
@@ -248,6 +248,7 @@ export default function Home() {
         <div className="absolute -bottom-32 -left-16 w-80 h-80 rounded-full bg-[#6a3cff]/50 blur-3xl"></div>
         <div className="absolute top-24 right-[12%] w-40 h-40 rounded-full bg-white/5 blur-xl"></div>
         <div className="absolute inset-x-0 bottom-0 h-24 bg-gradient-to-t from-black/25 to-transparent"></div>
+        <div className="absolute inset-0 bg-[#0a1428]/0 dark:bg-[#0a1428]/55 transition-colors" aria-hidden="true"></div>
 
         <div className="relative max-w-[1240px] mx-auto px-4 py-14 sm:py-16 md:py-24 text-white text-center">
           <span className="inline-flex items-center gap-2 rounded-full bg-white/10 backdrop-blur border border-white/20 px-3.5 sm:px-4 py-1.5 text-[11px] sm:text-xs font-semibold mb-5 sm:mb-6 fade-up">
@@ -255,7 +256,7 @@ export default function Home() {
             100.000+ Project Selesai Setiap Bulan
           </span>
           <h1 className="text-[27px] leading-[1.2] sm:text-3xl md:text-5xl font-extrabold md:leading-[1.15] tracking-tight max-w-2xl mx-auto fade-up">
-            Selesaikan Masalahmu dengan <span className="bg-gradient-to-r from-amber-300 to-orange-400 bg-clip-text text-transparent">Freelancer Terbaik</span> di masalahta
+            Selesaikan Masalahmu dengan <span className="bg-gradient-to-r from-amber-300 to-orange-400 dark:from-[#d9a441] dark:to-[#b06f1f] bg-clip-text text-transparent">Freelancer Terbaik</span> di masalahta
           </h1>
           <p className="mt-3.5 sm:mt-4 text-white/85 text-[15px] sm:text-base md:text-lg max-w-xl mx-auto fade-up">
             Ribuan jasa profesional murah — desain, website, marketing, dan lainnya. Aman, cepat, dengan garansi hasil.
@@ -285,12 +286,12 @@ export default function Home() {
 
       {/* CATEGORIES */}
       <section className="max-w-[1240px] mx-auto px-4 -mt-10 mb-4 relative z-10">
-        <div className="bg-white rounded-2xl md:rounded-3xl ring-1 ring-black/5 shadow-[0_24px_60px_-20px_rgba(2,32,71,0.3)] p-2 sm:p-3 fade-up">
+        <div className="bg-white rounded-2xl md:rounded-3xl ring-1 ring-black/5 dark:ring-white/10 shadow-[0_24px_60px_-20px_rgba(2,32,71,0.3)] dark:shadow-black/40 p-2 sm:p-3 fade-up dark:bg-slate-900">
           <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-8 gap-1.5">
             {cats.map((c, i) => (
-              <Link key={c.id} to={`/explore?category=${c.slug}`} className="group flex items-center gap-3 rounded-xl px-3 py-2.5 hover:bg-blue-50/70 transition-colors sm:flex-col sm:gap-2 sm:py-4 sm:px-2 sm:text-center" style={{ animationDelay: `${i * 40}ms` }}>
-                <span className={`w-10 h-10 sm:w-11 sm:h-11 shrink-0 rounded-xl bg-gradient-to-br ${catPalette[i % 8]} flex items-center justify-center text-[20px] shadow-sm group-hover:scale-110 transition-transform`}>{c.icon}</span>
-                <span className="text-[12px] sm:text-[12.5px] font-bold text-gray-800 group-hover:text-[#0e76f1] transition-colors line-clamp-1">{c.name}</span>
+              <Link key={c.id} to={`/explore?category=${c.slug}`} className="group flex items-center gap-3 rounded-xl px-3 py-2.5 hover:bg-blue-50/70 dark:hover:bg-blue-500/10 transition-colors sm:flex-col sm:gap-2 sm:py-4 sm:px-2 sm:text-center" style={{ animationDelay: `${i * 40}ms` }}>
+                <span className={`w-10 h-10 sm:w-11 sm:h-11 shrink-0 rounded-xl bg-gradient-to-br ${catPalette[i % 8]} dark:from-white/10 dark:to-white/5 dark:saturate-[.7] dark:brightness-[.9] flex items-center justify-center text-[20px] shadow-sm group-hover:scale-110 transition-transform`}>{c.icon}</span>
+                <span className="text-[12px] sm:text-[12.5px] font-bold text-gray-800 group-hover:text-[#0e76f1] dark:group-hover:text-blue-400 transition-colors line-clamp-1 dark:text-slate-300">{c.name}</span>
               </Link>
             ))}
           </div>
@@ -306,8 +307,8 @@ export default function Home() {
             </div>
             <div>
               <div className="text-[11px] font-extrabold uppercase tracking-wider text-orange-500">Paling Laris</div>
-              <h2 className="text-xl md:text-2xl font-extrabold text-ink mt-0.5">Jasa Terlaris Hari Ini</h2>
-              <p className="text-sm text-gray-500 mt-1">Paling banyak dipesan dan mendapatkan rating terbaik</p>
+              <h2 className="text-xl md:text-2xl font-extrabold text-ink mt-0.5 dark:text-gray-100">Jasa Terlaris Hari Ini</h2>
+              <p className="text-sm text-gray-500 mt-1 dark:text-gray-400">Paling banyak dipesan dan mendapatkan rating terbaik</p>
             </div>
           </div>
           <Link to="/explore" className="group hidden sm:flex items-center gap-1.5 text-sm font-bold text-[#0e76f1] hover:gap-2.5 transition-all">
@@ -327,12 +328,12 @@ export default function Home() {
       </section>
 
       {/* HOW IT WORKS */}
-      <section className="mt-14 bg-white border-y border-gray-200 py-14">
+      <section className="mt-14 bg-white border-y border-gray-200 py-14 dark:bg-slate-900 dark:border-white/10">
         <div className="max-w-[1240px] mx-auto px-4">
           <div className="text-center mb-10">
             <div className="text-[11px] font-extrabold uppercase tracking-wider text-[#0e76f1]">Proses Mudah</div>
-            <h2 className="text-2xl md:text-3xl font-extrabold text-ink mt-1.5">Cara Kerja <span className="bg-gradient-to-r from-[#0e76f1] to-[#6a3cff] bg-clip-text text-transparent">masalahta.id</span></h2>
-            <p className="text-sm text-gray-500 mt-2">Tiga langkah mudah untuk mulai project kamu</p>
+            <h2 className="text-2xl md:text-3xl font-extrabold text-ink mt-1.5 dark:text-gray-100">Cara Kerja <span className="bg-gradient-to-r from-[#0e76f1] to-[#6a3cff] bg-clip-text text-transparent">masalahta.id</span></h2>
+            <p className="text-sm text-gray-500 mt-2 dark:text-gray-400">Tiga langkah mudah untuk mulai project kamu</p>
           </div>
           <div className="relative">
             <span className="hidden md:block absolute top-8 left-[16%] right-[16%] h-0.5 rounded-full overflow-hidden bg-gray-100" aria-hidden="true"><span className="absolute inset-0 origin-left bg-gradient-to-r from-[#0e76f1] via-[#6a3cff] to-emerald-400 animate-flow-line"></span></span>
@@ -349,8 +350,8 @@ export default function Home() {
                     </div>
                     <span className="absolute -top-2 -right-2 z-20 bg-gradient-to-r from-[#0e76f1] to-[#6a3cff] text-white text-[11px] font-extrabold w-7 h-7 rounded-full flex items-center justify-center shadow-md ring-4 ring-white animate-flow-ping" style={{ animationDelay: `${900 + i * 250}ms` }}>{i + 1}</span>
                   </div>
-                  <h3 className="font-extrabold text-ink mt-4 transition-colors duration-300 group-hover:text-[#0e76f1]">{s.t}</h3>
-                  <p className="text-sm text-gray-500 leading-relaxed mt-1.5 max-w-[280px] mx-auto">{s.d}</p>
+                  <h3 className="font-extrabold text-ink mt-4 transition-colors duration-300 group-hover:text-[#0e76f1] dark:text-gray-100">{s.t}</h3>
+                  <p className="text-sm text-gray-500 leading-relaxed mt-1.5 max-w-[280px] mx-auto dark:text-gray-400">{s.d}</p>
                   {i < 2 && (
                     <Icon name="chevRight" size={20} className="hidden md:block absolute top-6 -right-4 text-[#0e76f1] animate-flow-nudge" />
                   )}
@@ -365,34 +366,34 @@ export default function Home() {
       <section className="max-w-[1240px] mx-auto px-4 mt-14">
         <div className="text-center mb-8">
           <div className="text-[11px] font-extrabold uppercase tracking-wider text-[#0e76f1]">Testimoni</div>
-          <h2 className="text-2xl md:text-3xl font-extrabold text-ink mt-1.5"><span className="bg-gradient-to-r from-[#0e76f1] to-[#6a3cff] bg-clip-text text-transparent">Ulasan Pelanggan</span></h2>
+          <h2 className="text-2xl md:text-3xl font-extrabold text-ink mt-1.5 dark:text-gray-100"><span className="bg-gradient-to-r from-[#0e76f1] to-[#6a3cff] bg-clip-text text-transparent">Ulasan Pelanggan</span></h2>
         </div>
         <TestimonialCarousel />
       </section>
 
       {/* CTA */}
       <section className="max-w-[1240px] mx-auto px-4 mt-14">
-        <div className="relative overflow-hidden rounded-3xl border border-gray-200/70 bg-gradient-to-b from-[#f5f9ff] via-white to-white px-6 py-10 sm:px-10 sm:py-14 md:px-14 text-center shadow-[0_24px_70px_-30px_rgba(14,118,241,0.35)]">
+        <div className="relative overflow-hidden rounded-3xl border border-gray-200/70 dark:border-white/10 dark:bg-slate-900 bg-gradient-to-b from-[#f5f9ff] via-white to-white dark:from-slate-900 dark:via-slate-900 dark:to-slate-900 px-6 py-10 sm:px-10 sm:py-14 md:px-14 text-center shadow-[0_24px_70px_-30px_rgba(14,118,241,0.35)]">
           <div className="absolute inset-x-0 top-0 h-1 bg-gradient-to-r from-[#0e76f1] via-[#6a3cff] to-[#0e76f1]" aria-hidden="true"></div>
-          <div className="absolute -top-20 left-1/4 w-64 h-64 rounded-full bg-blue-100/60 blur-3xl" aria-hidden="true"></div>
-          <div className="absolute -bottom-24 right-1/4 w-64 h-64 rounded-full bg-violet-100/60 blur-3xl" aria-hidden="true"></div>
+          <div className="absolute -top-20 left-1/4 w-64 h-64 rounded-full bg-blue-100/60 dark:bg-blue-500/10 blur-3xl" aria-hidden="true"></div>
+          <div className="absolute -bottom-24 right-1/4 w-64 h-64 rounded-full bg-violet-100/60 dark:bg-violet-500/10 blur-3xl" aria-hidden="true"></div>
           <div className="relative max-w-xl mx-auto">
-            <span className="inline-flex items-center gap-2 rounded-full bg-white border border-blue-100 shadow-sm px-3.5 py-1.5 text-[11px] font-bold uppercase tracking-wider text-[#0e76f1]">
+            <span className="inline-flex items-center gap-2 rounded-full bg-white dark:bg-slate-800 dark:border-white/10 border border-blue-100 shadow-sm px-3.5 py-1.5 text-[11px] font-bold uppercase tracking-wider text-[#0e76f1] dark:text-blue-400">
               <span className="w-6 h-6 rounded-full bg-gradient-to-br from-[#0e76f1] to-[#6a3cff] text-white flex items-center justify-center"><Icon name="briefcase" size={12} /></span> Untuk Freelancer
             </span>
-            <h2 className="mt-5 text-[26px] sm:text-[32px] md:text-[36px] font-extrabold text-ink leading-[1.12] tracking-tight">
+            <h2 className="mt-5 text-[26px] sm:text-[32px] md:text-[36px] font-extrabold text-ink leading-[1.12] tracking-tight dark:text-gray-100">
               Punya Skill? Jadi Freelancer & <span className="bg-gradient-to-r from-[#0e76f1] to-[#6a3cff] bg-clip-text text-transparent">Mulai Cuan</span>
             </h2>
-            <p className="mt-3 text-gray-500 text-[14px] sm:text-[15px] leading-relaxed max-w-md mx-auto">
+            <p className="mt-3 text-gray-500 text-[14px] sm:text-[15px] leading-relaxed max-w-md mx-auto dark:text-gray-400">
               Buat jasa kamu sekarang, terima order, dan wujudkan penghasilan impianmu.
             </p>
             <div className="mt-8 flex flex-col sm:flex-row gap-2.5 max-w-md mx-auto">
               <Link to="/register" className="btn-primary flex-1 !py-3.5 !text-[15px] !shadow-lg !shadow-blue-600/25 group">
                 Daftar Jadi Freelancer <Icon name="arrowRight" size={16} className="transition-transform group-hover:translate-x-0.5" />
               </Link>
-              <Link to="/explore" className="btn-outline flex-1 !py-3.5 !bg-white">Jelajahi Jasa</Link>
+              <Link to="/explore" className="btn-outline flex-1 !py-3.5 !bg-white dark:!bg-slate-800 dark:!border-white/10 dark:!text-gray-100">Jelajahi Jasa</Link>
             </div>
-            <div className="mt-8 inline-flex flex-wrap items-center justify-center gap-x-5 gap-y-2 rounded-full bg-gray-50/80 border border-gray-100 px-5 py-2.5 text-[12.5px] font-medium text-gray-500">
+            <div className="mt-8 inline-flex flex-wrap items-center justify-center gap-x-5 gap-y-2 rounded-full bg-gray-50/80 dark:bg-white/5 border border-gray-100 px-5 py-2.5 text-[12.5px] font-medium text-gray-500 dark:border-white/10 dark:text-gray-400">
               <span className="flex items-center gap-1.5"><Icon name="check" size={14} className="text-emerald-500" /> Gratis daftar</span>
               <span className="w-1 h-1 rounded-full bg-gray-300" aria-hidden="true"></span>
               <span className="flex items-center gap-1.5"><Icon name="check" size={14} className="text-emerald-500" /> Pembayaran aman</span>

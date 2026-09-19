@@ -83,19 +83,19 @@ export default function ChatBox({ orderId, conversationId, partner }) {
     <div className="mt-4">
       <div className="flex items-center gap-2 mb-3">
         <Avatar src={partner?.avatar} username={partner?.username} size={24} />
-        <span className="text-xs font-bold text-ink">Chat dengan {partner?.full_name || partner?.username || 'partner'}</span>
+        <span className="text-xs font-bold text-ink dark:text-gray-100">Chat dengan {partner?.full_name || partner?.username || 'partner'}</span>
       </div>
-      <div className="max-h-64 overflow-y-auto space-y-2.5 bg-gray-50/70 rounded-xl p-3">
+      <div className="max-h-64 overflow-y-auto space-y-2.5 bg-gray-50/70 dark:bg-white/5 rounded-xl p-3">
         {msgs.length === 0 && (
-          <p className="text-xs text-gray-400 text-center py-4">Belum ada pesan. Sapa partner-mu dulu!</p>
+          <p className="text-xs text-gray-400 dark:text-gray-400 text-center py-4">Belum ada pesan. Sapa partner-mu dulu!</p>
         )}
         {msgs.map(m => {
           const mine = m.sender_id === user?.id
           return (
             <div key={m.id} className={`flex ${mine ? 'justify-end' : 'justify-start'}`}>
-              <div className={`max-w-[80%] rounded-2xl px-3.5 py-2 ${mine ? 'bg-[#0e76f1] text-white rounded-br-md' : 'bg-white border text-gray-800 rounded-bl-md shadow-sm'}`}>
+              <div className={`max-w-[80%] rounded-2xl px-3.5 py-2 ${mine ? 'bg-[#0e76f1] text-white rounded-br-md' : 'bg-white dark:bg-slate-800 dark:border-white/10 border text-gray-800 dark:text-gray-100 rounded-bl-md shadow-sm'}`}>
                 <p className="text-[13px] leading-relaxed whitespace-pre-wrap break-words">{m.body}</p>
-                <p className={`text-[10px] mt-1 ${mine ? 'text-white/70' : 'text-gray-400'}`}>{relativeTime(m.created_at)}</p>
+                <p className={`text-[10px] mt-1 ${mine ? 'text-white/70' : 'text-gray-400 dark:text-gray-400'}`}>{relativeTime(m.created_at)}</p>
               </div>
             </div>
           )
@@ -103,7 +103,7 @@ export default function ChatBox({ orderId, conversationId, partner }) {
         <div ref={bottom}></div>
       </div>
       {typing && (
-        <div className="flex items-center gap-1.5 mt-2 ml-1 text-[11px] font-semibold text-gray-400">
+        <div className="flex items-center gap-1.5 mt-2 ml-1 text-[11px] font-semibold text-gray-400 dark:text-gray-400">
           <span className="flex gap-1">
             <span className="w-1.5 h-1.5 rounded-full bg-gray-400 animate-bounce" style={{ animationDelay: '0ms' }}></span>
             <span className="w-1.5 h-1.5 rounded-full bg-gray-400 animate-bounce" style={{ animationDelay: '150ms' }}></span>

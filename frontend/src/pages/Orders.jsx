@@ -30,14 +30,14 @@ function ReviewForm({ order, onDone }) {
 
   return (
     <form onSubmit={submit} className="mt-3 rounded-xl bg-amber-50/60 border border-amber-100 p-4">
-      <p className="text-xs font-extrabold text-ink">Beri ulasan untuk freelancer ini</p>
+      <p className="text-xs font-extrabold text-ink dark:text-gray-100">Beri ulasan untuk freelancer ini</p>
       <div className="flex items-center gap-1 mt-2">
         {[1, 2, 3, 4, 5].map(v => (
           <button key={v} type="button" onClick={() => setRating(v)} onMouseEnter={() => setHover(v)} onMouseLeave={() => setHover(0)} aria-label={`${v} bintang`} className="p-0.5 hover:scale-125 active:scale-95 transition-transform">
             <Icon name="starFill" size={26} className={(hover || rating) >= v ? 'text-amber-400' : 'text-gray-300'} fill="currentColor" strokeWidth={0} />
           </button>
         ))}
-        <span className="text-xs font-bold text-gray-500 ml-1.5">{['', 'Buruk', 'Kurang', 'Cukup', 'Bagus', 'Luar biasa'][hover || rating]}</span>
+        <span className="text-xs font-bold text-gray-500 ml-1.5 dark:text-gray-400">{['', 'Buruk', 'Kurang', 'Cukup', 'Bagus', 'Luar biasa'][hover || rating]}</span>
       </div>
       <textarea value={comment} onChange={e => setComment(e.target.value)} placeholder="Ceritakan pengalamanmu..." rows={2} className="input-field mt-3 !py-2.5" />
       <button disabled={saving} className="btn-primary !py-2 !px-4 !text-xs mt-2.5">
@@ -115,8 +115,8 @@ export default function Orders() {
 
   return (
     <div className="max-w-[900px] mx-auto px-4 py-6">
-      <h1 className="text-xl font-extrabold text-ink">Pesanan Saya</h1>
-      <p className="text-sm text-gray-500 mt-1">Pantau dan kelola semua transaksimu</p>
+      <h1 className="text-xl font-extrabold text-ink dark:text-gray-100">Pesanan Saya</h1>
+      <p className="text-sm text-gray-500 mt-1 dark:text-gray-400">Pantau dan kelola semua transaksimu</p>
 
       <div className="mt-4 flex flex-wrap items-center gap-2">
         {user?.role === 'freelancer' && (
@@ -141,8 +141,8 @@ export default function Orders() {
         ) : list.length === 0 ? (
           <div className="card p-12 text-center">
             <div className="w-16 h-16 mx-auto rounded-2xl bg-gray-100 flex items-center justify-center mb-4 text-gray-400"><Icon name="box" size={28} /></div>
-            <h3 className="font-bold text-ink">Belum ada pesanan</h3>
-            <p className="text-sm text-gray-500 mt-1 mb-5">Temukan jasa yang kamu butuhkan sekarang</p>
+            <h3 className="font-bold text-ink dark:text-gray-100">Belum ada pesanan</h3>
+            <p className="text-sm text-gray-500 mt-1 mb-5 dark:text-gray-400">Temukan jasa yang kamu butuhkan sekarang</p>
             <Link to="/explore" className="btn-primary">Jelajahi Jasa</Link>
           </div>
         ) : list.map(o => {
@@ -155,8 +155,8 @@ export default function Orders() {
                   {o.gig?.images ? <img src={parseImages(o.gig.images)[0]} alt="" className="w-full h-full object-cover" loading="lazy" onError={e => e.target.style.display = 'none'} /> : <div className="w-full h-full flex items-center justify-center text-gray-300"><Icon name="image" size={18} /></div>}
                 </div>
                 <div className="flex-1 min-w-0 sm:min-w-[180px]">
-                  <Link to={`/gig/${o.gig?.slug}`} className="text-sm font-bold text-ink hover:text-[#0e76f1] line-clamp-1">{o.gig?.title || `Order #${o.id}`}</Link>
-                  <div className="text-[12px] text-gray-500 mt-0.5 flex items-center gap-1.5 flex-wrap">
+                  <Link to={`/gig/${o.gig?.slug}`} className="text-sm font-bold text-ink hover:text-[#0e76f1] line-clamp-1 dark:text-gray-100">{o.gig?.title || `Order #${o.id}`}</Link>
+                  <div className="text-[12px] text-gray-500 mt-0.5 flex items-center gap-1.5 flex-wrap dark:text-gray-400">
                     <span className="font-semibold">{formatIDR(o.price)}</span> •
                     <span>Paket {o.package?.name}</span> •
                     <span className="flex items-center gap-1"><Avatar src={partner?.avatar} username={partner?.username} size={16} /> {partner?.username || '—'}</span>
@@ -170,7 +170,7 @@ export default function Orders() {
               </div>
 
               {o.note && (
-                <div className="mt-3 text-[12px] text-gray-500 bg-gray-50 rounded-xl px-4 py-2.5 flex items-start gap-2">
+                <div className="mt-3 text-[12px] text-gray-500 bg-gray-50 rounded-xl px-4 py-2.5 flex items-start gap-2 dark:bg-white/5 dark:text-gray-400">
                   <span className="text-[11px] font-bold text-gray-400 uppercase tracking-wide mt-0.5 shrink-0">Brief:</span>
                   <span className="line-clamp-2">{o.note}</span>
                 </div>
@@ -186,7 +186,7 @@ export default function Orders() {
                   {o.status === 'progress' && isFreelancerView && <button onClick={() => updateStatus(o.id, 'review')} className="bg-amber-500 hover:bg-amber-600 text-white rounded-xl px-4 py-2 text-xs font-bold transition-colors"><Icon name="send" size={13} /> Kirim untuk Review</button>}
                   {o.status === 'review' && !isFreelancerView && <button onClick={() => updateStatus(o.id, 'completed')} className="bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl px-4 py-2 text-xs font-bold transition-colors"><Icon name="verified" size={13} /> Setujui & Selesai</button>}
                   {o.status === 'progress' && !isFreelancerView && <span className="text-[11px] font-semibold text-blue-600 bg-blue-50 rounded-lg px-3 py-2">Freelancer sedang mengerjakan ({o.package?.delivery_days} hari)</span>}
-                  {['pending', 'progress', 'review'].includes(o.status) && <button onClick={() => updateStatus(o.id, 'cancelled')} className="border border-gray-200 text-gray-500 hover:text-red-600 hover:border-red-200 rounded-xl px-4 py-2 text-xs font-bold transition-colors">Batalkan</button>}
+                  {['pending', 'progress', 'review'].includes(o.status) && <button onClick={() => updateStatus(o.id, 'cancelled')} className="border border-gray-200 text-gray-500 hover:text-red-600 hover:border-red-200 rounded-xl px-4 py-2 text-xs font-bold transition-colors dark:border-white/10 dark:text-gray-400">Batalkan</button>}
                 </div>
               )}
 
@@ -211,7 +211,7 @@ export default function Orders() {
                       <Icon name="verified" size={15} /> Pesanan selesai dengan baik.
                     </div>
                   )}
-                  <button onClick={() => setChatOpen(p => ({ ...p, [o.id]: !p[o.id] }))} className="mt-2 text-xs font-bold text-gray-500 hover:text-[#0e76f1] flex items-center gap-1.5">
+                  <button onClick={() => setChatOpen(p => ({ ...p, [o.id]: !p[o.id] }))} className="mt-2 text-xs font-bold text-gray-500 hover:text-[#0e76f1] flex items-center gap-1.5 dark:text-gray-400">
                     <Icon name="chat" size={14} /> {chatOpen[o.id] ? 'Tutup Chat' : 'Lihat Chat'}
                   </button>
                 </div>
@@ -219,7 +219,7 @@ export default function Orders() {
 
               {o.status === 'cancelled' && (
                 <div className="mt-4 border-t pt-4">
-                  <button onClick={() => setChatOpen(p => ({ ...p, [o.id]: !p[o.id] }))} className="text-xs font-bold text-gray-500 hover:text-[#0e76f1] flex items-center gap-1.5">
+                  <button onClick={() => setChatOpen(p => ({ ...p, [o.id]: !p[o.id] }))} className="text-xs font-bold text-gray-500 hover:text-[#0e76f1] flex items-center gap-1.5 dark:text-gray-400">
                     <Icon name="chat" size={14} /> {chatOpen[o.id] ? 'Tutup Chat' : 'Lihat Chat'}
                   </button>
                 </div>
